@@ -22,25 +22,27 @@ class TodoRepository {
       await todo.parent.save();
 
       // Epic 2.6: Auto-transition Goal to 'Completed' when all children are completed.
-      if (todo.goal.value != null) {
-        final goal = todo.goal.value!;
-        final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
-        
-        bool allCompleted = true;
-        if (allGoalTodos.isEmpty) {
-          allCompleted = false;
-        } else {
-          for (final t in allGoalTodos) {
-            if (t.status != TodoStatus.completed) {
-              allCompleted = false;
-              break;
+      if (todo.goalExternalId != null) {
+        final goal = await isar.goals.filter().externalIdEqualTo(todo.goalExternalId!).findFirst();
+        if (goal != null) {
+          final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
+          
+          bool allCompleted = true;
+          if (allGoalTodos.isEmpty) {
+            allCompleted = false;
+          } else {
+            for (final t in allGoalTodos) {
+              if (t.status != TodoStatus.completed) {
+                allCompleted = false;
+                break;
+              }
             }
           }
-        }
-        
-        if (goal.isCompleted != allCompleted) {
-          goal.isCompleted = allCompleted;
-          await isar.goals.put(goal);
+          
+          if (goal.isCompleted != allCompleted) {
+            goal.isCompleted = allCompleted;
+            await isar.goals.put(goal);
+          }
         }
       }
 
@@ -51,7 +53,35 @@ class TodoRepository {
 
   Future<void> deleteTodo(Id id) async {
     await isar.writeTxn(() async {
-      await isar.todos.delete(id);
+      final todo = await isar.todos.get(id);
+      if (todo != null) {
+        final goalExternalId = todo.goalExternalId;
+        await isar.todos.delete(id);
+        
+        if (goalExternalId != null) {
+          final goal = await isar.goals.filter().externalIdEqualTo(goalExternalId).findFirst();
+          if (goal != null) {
+            final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
+            
+            bool allCompleted = true;
+            if (allGoalTodos.isEmpty) {
+              allCompleted = false;
+            } else {
+              for (final t in allGoalTodos) {
+                if (t.status != TodoStatus.completed) {
+                  allCompleted = false;
+                  break;
+                }
+              }
+            }
+            
+            if (goal.isCompleted != allCompleted) {
+              goal.isCompleted = allCompleted;
+              await isar.goals.put(goal);
+            }
+          }
+        }
+      }
     });
   }
 

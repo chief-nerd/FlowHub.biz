@@ -29,13 +29,6 @@ class ChangeViewFilter extends TodoEvent {
   List<Object?> get props => [filter];
 }
 
-class TodosUpdated extends TodoEvent {
-  final List<Todo> todos;
-  const TodosUpdated(this.todos);
-  @override
-  List<Object?> get props => [todos];
-}
-
 // States
 abstract class TodoState extends Equatable {
   const TodoState();
@@ -72,43 +65,32 @@ class TodoError extends TodoState {
 // Bloc
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final TodoRepository todoRepository;
-  
+
   TodoBloc({required this.todoRepository}) : super(TodoInitial()) {
     on<LoadTodos>(_onLoadTodos);
-    on<TodosUpdated>(_onTodosUpdated);
     on<ChangeViewFilter>(_onChangeViewFilter);
   }
 
   Future<void> _onLoadTodos(LoadTodos event, Emitter<TodoState> emit) async {
     emit(TodoLoading());
     try {
-      final todos = await todoRepository.getAllTodos();
-      add(TodosUpdated(todos));
-      
-      // In a real app we would subscribe to the stream:
-      todoRepository.watchTodos().listen((todos) {
-        if (!isClosed) {
-          add(TodosUpdated(todos));
-        }
-      });
+      await emit.forEach<List<Todo>>(
+        todoRepository.watchTodos(),
+        onData: (todos) {
+          final filter = state is TodoLoaded 
+              ? (state as TodoLoaded).activeFilter 
+              : TodoViewFilter.inbox;
+          return TodoLoaded(
+            allTodos: todos,
+            filteredTodos: _applyFilter(todos, filter),
+            activeFilter: filter,
+          );
+        },
+        onError: (error, stackTrace) => TodoError(error.toString()),
+      );
     } catch (e) {
       emit(TodoError(e.toString()));
     }
-  }
-
-  void _onTodosUpdated(TodosUpdated event, Emitter<TodoState> emit) {
-    final currentState = state;
-    TodoViewFilter filter = TodoViewFilter.inbox;
-    if (currentState is TodoLoaded) {
-      filter = currentState.activeFilter;
-    }
-    
-    final filtered = _applyFilter(event.todos, filter);
-    emit(TodoLoaded(
-      allTodos: event.todos,
-      filteredTodos: filtered,
-      activeFilter: filter,
-    ));
   }
 
   void _onChangeViewFilter(ChangeViewFilter event, Emitter<TodoState> emit) {
@@ -126,20 +108,20 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   List<Todo> _applyFilter(List<Todo> todos, TodoViewFilter filter) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     // Identify all overdue tasks
     final overdueTodos = todos.where((t) {
       if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
       return t.dueDate!.isBefore(today);
     }).toList();
-    
+
     List<Todo> viewTodos = [];
-    
+
     switch (filter) {
       case TodoViewFilter.inbox:
         viewTodos = todos.where((t) => t.status != TodoStatus.completed && t.dueDate == null && t.parentExternalId == null).toList();
         break;
-        
+
       case TodoViewFilter.today:
         viewTodos = todos.where((t) {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
@@ -148,17 +130,16 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
                  t.dueDate!.day == now.day;
         }).toList();
         break;
-        
+
       case TodoViewFilter.thisWorkWeek:
         viewTodos = todos.where((t) {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-          // Not overdue, but within next 5 days
           if (t.dueDate!.isBefore(today)) return false;
           final diff = t.dueDate!.difference(today).inDays;
           return diff >= 0 && diff <= 5;
         }).toList();
         break;
-        
+
       case TodoViewFilter.thisWeekAfterwork:
         viewTodos = todos.where((t) {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
@@ -167,7 +148,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
           return diff >= 0 && diff <= 5;
         }).toList();
         break;
-        
+
       case TodoViewFilter.thisMonth:
         viewTodos = todos.where((t) {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
@@ -175,17 +156,17 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
           return t.dueDate!.year == now.year && t.dueDate!.month == now.month;
         }).toList();
         break;
-        
+
       case TodoViewFilter.delegated:
         viewTodos = todos.where((t) => t.assigneeExternalId != null && t.assigneeExternalId != t.ownerExternalId && t.parentExternalId == null).toList();
         break;
     }
-    
+
     // Merge overdue with viewTodos, removing duplicates, and ensure overdue is at top
     final Set<Id> viewTodoIds = viewTodos.map((t) => t.id).toSet();
     final List<Todo> uniqueOverdue = overdueTodos.where((t) => !viewTodoIds.contains(t.id)).toList();
-    
+
     return [...uniqueOverdue, ...viewTodos];
   }
-
 }
+

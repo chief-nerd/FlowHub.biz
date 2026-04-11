@@ -3,11 +3,13 @@ import '../../../sync/data/models/todo.dart';
 
 class TodoListItem extends StatefulWidget {
   final Todo todo;
+  final List<Todo> allTodos;
   final int depth;
 
   const TodoListItem({
     super.key,
     required this.todo,
+    required this.allTodos,
     this.depth = 0,
   });
 
@@ -26,9 +28,11 @@ class _TodoListItemState extends State<TodoListItem> {
 
   @override
   Widget build(BuildContext context) {
-    // Note: If using IsarLinks, ensure they are loaded.
-    // In a real app, a BLoC would provide the structured view model.
-    final subTodos = widget.todo.subTodos.toList();
+    // Memory-based tree construction instead of lazy IsarLinks
+    final subTodos = widget.todo.externalId != null 
+        ? widget.allTodos.where((t) => t.parentExternalId == widget.todo.externalId).toList()
+        : <Todo>[];
+        
     final hasChildren = subTodos.isNotEmpty;
 
     return Column(
@@ -80,6 +84,7 @@ class _TodoListItemState extends State<TodoListItem> {
           ...subTodos.map(
             (child) => TodoListItem(
               todo: child,
+              allTodos: widget.allTodos,
               depth: widget.depth + 1,
             ),
           ),
