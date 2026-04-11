@@ -10,7 +10,7 @@
 - [x] **0.3:** Configure Flutter frontend: Setup `pubspec.yaml`, flutter_lints, and initial folder structure (features, core, shared).
 - [x] **0.4:** Create baseline Dockerfiles for the Python server and Flutter Web App.
 - [x] **0.5:** Setup `docker-compose.yml` with Postgres, Redis, backend, frontend, and Nginx reverse proxy.
-- [ ] **0.6:** Setup GitHub Actions (or equivalent CI) for automated linting, testing, and Docker builds.
+- [x] **0.6:** Setup GitHub Actions (or equivalent CI) for automated linting, testing, and Docker builds.
 
 ## 🗺️ Epic 1: Data Layer & Local-First Architecture
 - [x] **1.1:** Backend: Define SQLAlchemy models for User, Goal, Todo, WorkSession. Setup Alembic migrations.
