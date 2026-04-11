@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'core/api/api_client.dart';
+import 'features/auth/data/repositories/auth_repository.dart';
+import 'features/sync/data/repositories/goal_repository.dart';
+import 'features/sync/data/repositories/todo_repository.dart';
+import 'features/sync/data/repositories/work_session_repository.dart';
 
 void main() {
-  runApp(const MyApp());
+  final apiClient = ApiClient();
+  
+  runApp(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => AuthRepository(apiClient)),
+        // In a real app, we'd wait for Isar to init before providing these:
+        // RepositoryProvider(create: (context) => GoalRepository(isar)),
+        // RepositoryProvider(create: (context) => TodoRepository(isar)),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
