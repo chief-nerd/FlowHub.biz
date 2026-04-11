@@ -18,7 +18,7 @@
 - [x] **1.3:** Backend: Implement JWT Authentication endpoints (Register, Login, Refresh, Me).
 - [x] **1.4:** Frontend: Implement Auth BLoC and secure token storage.
 - [x] **1.5:** Frontend: Build the local CRUD repository layer for Goals and Todos.
-- [ ] **1.6:** Fullstack: Implement the background Sync Engine queue. Handle offline mutations and Remote-Overrides-Local conflict resolution.
+- [x] **1.6:** Fullstack: Implement the background Sync Engine queue. Handle offline mutations and Remote-Overrides-Local conflict resolution.
 
 ## 🗺️ Epic 2: UI Foundation & Side Panel Views
 - [ ] **2.1:** Implement the core Split-Pane layout (Collapsible Side Panel on left, Main placeholder right).
