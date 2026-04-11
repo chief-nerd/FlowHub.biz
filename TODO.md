@@ -14,7 +14,7 @@
 
 ## 🗺️ Epic 1: Data Layer & Local-First Architecture
 - [x] **1.1:** Backend: Define SQLAlchemy models for User, Goal, Todo, WorkSession. Setup Alembic migrations.
-- [ ] **1.2:** Frontend: Define Isar/SQLite schemas mapping to the backend models. Generate Isar accessors.
+- [x] **1.2:** Frontend: Define Isar/SQLite schemas mapping to the backend models. Generate Isar accessors.
 - [ ] **1.3:** Backend: Implement JWT Authentication endpoints (Register, Login, Refresh, Me).
 - [ ] **1.4:** Frontend: Implement Auth BLoC and secure token storage.
 - [ ] **1.5:** Frontend: Build the local CRUD repository layer for Goals and Todos.
