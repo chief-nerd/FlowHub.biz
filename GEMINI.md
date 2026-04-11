@@ -5,23 +5,23 @@ FlowHub is a self-hostable, offline-first, multi-user productivity platform. It 
 
 ## 🛠️ Tech Stack & Infrastructure
 * **Monorepo Structure:** `/app` (Frontend) and `/server` (Backend).
-* **Frontend:** Flutter, BLoC (Strict State Management), GoRouter, Isar/SQLite (Local Database).
-* **Backend:** Python (FastAPI), PostgreSQL, Redis/Celery (Job queues, webhooks, cron), SQLAlchemy/Alembic.
+* **Frontend:** Flutter, BLoC (Strict State Management), GoRouter, Isar (Local Database).
+* **Backend:** Python (FastAPI), PostgreSQL, Redis/Celery (Job queues, webhooks, cron), SQLAlchemy 2.0 (Async)/Alembic.
 * **Deployment:** Containerized via Docker Compose (Nginx reverse proxy, API backend, Flutter Web frontend).
 
 ## 🏛️ Core Architectural Rules
-1.  **Local-First & Optimistic UI:** The Flutter app writes to Isar/SQLite first. The UI reacts instantly. A background BLoC sync engine pushes changes to the Python backend.
+1.  **Local-First & Optimistic UI:** The Flutter app writes to Isar first. The UI reacts instantly. A background BLoC sync engine pushes changes to the Python backend.
 2.  **Conflict Resolution:** Remote overrides Local. If an external source (GitHub, MS ToDo) changes, it is the ultimate source of truth.
 3.  **UI/UX Paradigm ("Don't Make Me Think"):** Persistent Split-Pane layout. Side panel (Lists/Filters) on the left, Main Calendar grid on the right. Minimal, neutral colors. Semantic colors only for actions. Overdue tasks are universally pinned to the top of all views.
 
 ## 🗂️ Core Data Models & Schema
-* **User:** Multi-tenant. `id`, `name`, `email`, `afterwork_start_time` (default 17:00), `timezone`.
+* **User:** Multi-tenant. `id` (UUID), `name`, `email`, `afterwork_start_time` (default 17:00), `timezone`.
 * **Goal:** Structural container. No time estimation. Cannot be dragged to calendar. Auto-completes when all child elements complete.
 * **Todo:** The actionable unit.
-    * *Fields:* `id`, `parent_id` (FlowHub internal only), `owner_id`, `assignee_id`, `source_type` (Native, GitHub, MS ToDo), `external_id`, `start_date`, `due_date`, `status` (Draft, In Progress, Waiting, Completed), `estimated_duration`.
+    * *Fields:* `id` (UUID), `parent_id` (FlowHub internal only), `owner_id`, `assignee_id`, `source_type` (Native, GitHub, MS ToDo), `external_id`, `start_date`, `due_date`, `status` (Draft, In Progress, Waiting, Completed), `estimated_duration`.
     * *Hierarchy Rule:* Parent Todos stay "In Progress" even if all sub-todos are completed. They require manual sign-off.
 * **WorkSession:** The calendar block. A Todo can have many WorkSessions.
-    * *Fields:* `id`, `todo_id`, `start_time`, `end_time`, `status` (Scheduled, Logged, Ghost).
+    * *Fields:* `id` (UUID), `todo_id`, `start_time`, `end_time`, `status` (Scheduled, Logged, Ghost).
 
 ## 🔄 Sync Engine & Universal Tree Protocol
 * **Universal Tree:** FlowHub handles task hierarchy entirely locally. External plugins do *not* attempt to map FlowHub sub-tasks to external sub-tasks. (e.g., A FlowHub Sub-Todo mapped to a GitHub PR is just a standard PR on GitHub).
@@ -40,13 +40,35 @@ FlowHub is a self-hostable, offline-first, multi-user productivity platform. It 
 
 ---
 
-## ⚙️ AGENT WORK LOOP (STRICT MANDATE)
-For every single task in `TODO.md`, you MUST execute this loop:
-1.  **Analyze & Scope:** State your architectural approach in the chat before coding.
-2.  **Test-Driven Development:** Write minimal failing tests (Unit for backend, Widget/Unit for Flutter).
-3.  **Implementation:** Code the feature to make tests pass.
-4.  **Mocking/Validation:** Mock external APIs first. Verify timezone handling and state propagation.
-5.  **In-Depth Review:** Check against the Core Architectural Rules above.
-6.  **Verify:** Run all tests.
-7.  **Complete:** Mark task complete in `TODO.md`, commit code, and move to next.
+## ⚙️ AGENT WORK MODE (STRICT MANDATE)
+As a Senior Engineer, you must operate with high autonomy and strategic foresight. For every task in `TODO.md`, execute this **Senior Work Loop**:
 
+1.  **Analyze & Scope (Senior Thinking):** 
+    *   Explain the architectural approach in the chat.
+    *   Look "left and right": Identify edge cases, security implications, and performance bottlenecks before they happen.
+    *   Identify "low-hanging fruit": Implement sensible secondary features that improve the core task (e.g., adding `created_at` timestamps, better error logging).
+2.  **Clean Architecture Implementation:**
+    *   Maintain strict separation of concerns (Presentation -> Domain -> Data).
+    *   Backend: Use Pydantic schemas for validation and SQLAlchemy models for persistence.
+    *   Frontend: Use BLoC for business logic and Repositories for data access.
+3.  **Test-Driven Development (TDD):**
+    *   Write minimal failing tests (Unit for backend, Widget/Unit for Flutter).
+    *   Use mocks for external dependencies and database interactions.
+4.  **Verification & Validation:**
+    *   Verify timezone handling (everything stored in UTC).
+    *   Check state propagation across BLoCs and Sync Engine.
+    *   Run all tests.
+5.  **Clean Up & Document:**
+    *   Ensure code is formatted (Black/Ruff for Python).
+    *   Update `GEMINI.md` with any new critical knowledge discovered or decided during implementation.
+6.  **Complete:** Mark task complete in `TODO.md`, commit code, and move to next.
+
+## 💎 CRITICAL IMPLEMENTATION KNOWLEDGE
+*   **UUID Persistence:** We use UUIDs as primary keys in the backend (PostgreSQL) to avoid ID collisions during synchronization from various clients. Isar on the frontend uses `Id.autoIncrement` (int), but stores the backend UUID in an `externalId` field.
+*   **Timestamp Mixins:** All backend models must inherit from `TimestampMixin` (providing `created_at` and `updated_at`).
+*   **Sync Logic:** Local-First means we always write to Isar first. The `SyncEngine` tracks `PendingMutations` to push to the backend. Conflict resolution is strictly **Remote-Overrides-Local**.
+*   **JWT Security:** Auth tokens consist of an `access_token` (30m expiry) and a `refresh_token` (7d expiry).
+*   **Flutter Structure:** 
+    *   `lib/core`: Cross-feature logic (API client, database service).
+    *   `lib/shared`: UI components used by multiple features.
+    *   `lib/features/[feature_name]`: Domain-driven feature directories.
