@@ -11,7 +11,6 @@ class AuthRepository {
     final response = await _apiClient.dio.post('/auth/login', data: {
       'email': email,
       'password': password,
-      'full_name': 'Placeholder', // Backend register/login logic mismatch fix
     });
     
     final accessToken = response.data['access_token'];

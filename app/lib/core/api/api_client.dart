@@ -1,12 +1,22 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiClient {
   final Dio _dio = Dio();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   ApiClient() {
-    _dio.options.baseUrl = 'http://localhost:8000/api/v1'; // Default for local dev
+    String baseUrl = const String.fromEnvironment('API_URL', defaultValue: '');
+    if (baseUrl.isEmpty) {
+      if (kIsWeb) {
+        baseUrl = '/api/v1'; // Nginx handles routing
+      } else {
+        baseUrl = 'http://10.0.2.2:8000/api/v1'; // Default for Android emulator
+      }
+    }
+    _dio.options.baseUrl = baseUrl;
+    
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await _storage.read(key: 'access_token');

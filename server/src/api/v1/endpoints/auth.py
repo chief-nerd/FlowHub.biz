@@ -10,7 +10,7 @@ from src.core.security import (
     decode_token
 )
 from src.models.user import User
-from src.schemas.auth import UserCreate, Token, User as UserSchema
+from src.schemas.auth import UserCreate, UserLogin, Token, User as UserSchema
 from jose import JWTError
 import uuid
 
@@ -40,7 +40,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     return db_user
 
 @router.post("/login", response_model=Token)
-async def login(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
     # In a real scenario, login usually uses OAuth2 password flow, but for now we follow simple POST
     result = await db.execute(select(User).where(User.email == user_in.email))
     user = result.scalar_one_or_none()
