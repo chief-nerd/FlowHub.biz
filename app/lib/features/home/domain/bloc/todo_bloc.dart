@@ -42,17 +42,19 @@ class TodoLoading extends TodoState {}
 
 class TodoLoaded extends TodoState {
   final List<Todo> allTodos;
-  final List<Todo> filteredTodos;
+  final List<Todo> viewTodos;
+  final List<Todo> overdueTodos;
   final TodoViewFilter activeFilter;
 
   const TodoLoaded({
     required this.allTodos,
-    required this.filteredTodos,
+    required this.viewTodos,
+    required this.overdueTodos,
     this.activeFilter = TodoViewFilter.inbox,
   });
 
   @override
-  List<Object?> get props => [allTodos, filteredTodos, activeFilter];
+  List<Object?> get props => [allTodos, viewTodos, overdueTodos, activeFilter];
 }
 
 class TodoError extends TodoState {
@@ -80,9 +82,12 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
           final filter = state is TodoLoaded 
               ? (state as TodoLoaded).activeFilter 
               : TodoViewFilter.inbox;
+          
+          final filtered = _applyFilter(todos, filter);
           return TodoLoaded(
             allTodos: todos,
-            filteredTodos: _applyFilter(todos, filter),
+            viewTodos: filtered['view']!,
+            overdueTodos: filtered['overdue']!,
             activeFilter: filter,
           );
         },
@@ -99,13 +104,14 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       final filtered = _applyFilter(currentState.allTodos, event.filter);
       emit(TodoLoaded(
         allTodos: currentState.allTodos,
-        filteredTodos: filtered,
+        viewTodos: filtered['view']!,
+        overdueTodos: filtered['overdue']!,
         activeFilter: event.filter,
       ));
     }
   }
 
-  List<Todo> _applyFilter(List<Todo> todos, TodoViewFilter filter) {
+  Map<String, List<Todo>> _applyFilter(List<Todo> todos, TodoViewFilter filter) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -136,7 +142,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
           if (t.dueDate!.isBefore(today)) return false;
           final diff = t.dueDate!.difference(today).inDays;
-          return diff >= 0 && diff <= 5;
+          // Filter out weekends (Saturday = 6, Sunday = 7)
+          return diff >= 0 && diff <= 7 && t.dueDate!.weekday <= 5;
         }).toList();
         break;
 
@@ -145,7 +152,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
           if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
           if (t.dueDate!.isBefore(today)) return false;
           final diff = t.dueDate!.difference(today).inDays;
-          return diff >= 0 && diff <= 5;
+          // Filter specifically for weekends as "Afterwork" for now
+          return diff >= 0 && diff <= 7 && t.dueDate!.weekday > 5;
         }).toList();
         break;
 
@@ -162,11 +170,14 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
         break;
     }
 
-    // Merge overdue with viewTodos, removing duplicates, and ensure overdue is at top
     final Set<Id> viewTodoIds = viewTodos.map((t) => t.id).toSet();
     final List<Todo> uniqueOverdue = overdueTodos.where((t) => !viewTodoIds.contains(t.id)).toList();
 
-    return [...uniqueOverdue, ...viewTodos];
+    return {
+      'view': viewTodos,
+      'overdue': uniqueOverdue,
+    };
   }
 }
+
 

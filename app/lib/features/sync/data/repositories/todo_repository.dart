@@ -56,6 +56,13 @@ class TodoRepository {
       final todo = await isar.todos.get(id);
       if (todo != null) {
         final goalExternalId = todo.goalExternalId;
+        final externalId = todo.externalId;
+        
+        // Recursively delete sub-todos
+        if (externalId != null) {
+          await _deleteSubTodosRecursive(externalId);
+        }
+        
         await isar.todos.delete(id);
         
         if (goalExternalId != null) {
@@ -83,6 +90,16 @@ class TodoRepository {
         }
       }
     });
+  }
+
+  Future<void> _deleteSubTodosRecursive(String parentExternalId) async {
+    final subTodos = await isar.todos.filter().parentExternalIdEqualTo(parentExternalId).findAll();
+    for (final child in subTodos) {
+      if (child.externalId != null) {
+        await _deleteSubTodosRecursive(child.externalId!);
+      }
+      await isar.todos.delete(child.id);
+    }
   }
 
   Stream<List<Todo>> watchTodos() {

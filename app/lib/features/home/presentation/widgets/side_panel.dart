@@ -29,11 +29,25 @@ class SidePanel extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: state.filteredTodos.length,
-                  itemBuilder: (context, index) {
-                    return TodoListItem(todo: state.filteredTodos[index]);
-                  },
+                child: ListView(
+                  children: [
+                    if (state.overdueTodos.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          'Overdue',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      ...state.overdueTodos.map((todo) => TodoListItem(todo: todo, allTodos: state.allTodos)),
+                      const Divider(),
+                    ],
+                    ...state.viewTodos.map((todo) => TodoListItem(todo: todo, allTodos: state.allTodos)),
+                  ],
                 ),
               ),
             ],
