@@ -6,6 +6,8 @@ import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/sync/data/repositories/goal_repository.dart';
 import 'features/sync/data/repositories/todo_repository.dart';
 import 'features/sync/data/repositories/work_session_repository.dart';
+import 'features/home/presentation/pages/home_page.dart';
+import 'shared/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,27 +37,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FlowHub',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('FlowHub'),
-      ),
-      body: const Center(
-        child: Text('FlowHub is running'),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const HomePage(),
     );
   }
 }

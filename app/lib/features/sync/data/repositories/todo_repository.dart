@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import '../models/todo.dart';
+import '../models/goal.dart';
 
 class TodoRepository {
   final Isar isar;
@@ -19,6 +20,32 @@ class TodoRepository {
       await isar.todos.put(todo);
       await todo.goal.save();
       await todo.parent.save();
+
+      // Epic 2.6: Auto-transition Goal to 'Completed' when all children are completed.
+      if (todo.goal.value != null) {
+        final goal = todo.goal.value!;
+        final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
+        
+        bool allCompleted = true;
+        if (allGoalTodos.isEmpty) {
+          allCompleted = false;
+        } else {
+          for (final t in allGoalTodos) {
+            if (t.status != TodoStatus.completed) {
+              allCompleted = false;
+              break;
+            }
+          }
+        }
+        
+        if (goal.isCompleted != allCompleted) {
+          goal.isCompleted = allCompleted;
+          await isar.goals.put(goal);
+        }
+      }
+
+      // Epic 2.7: Todo logic: Require manual transition to "Completed" even if children are done.
+      // Therefore, we DO NOT auto-complete parent Todos here. They stay in their current status.
     });
   }
 

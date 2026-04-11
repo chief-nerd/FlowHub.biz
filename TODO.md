@@ -21,13 +21,13 @@
 - [x] **1.6:** Fullstack: Implement the background Sync Engine queue. Handle offline mutations and Remote-Overrides-Local conflict resolution.
 
 ## 🗺️ Epic 2: UI Foundation & Side Panel Views
-- [ ] **2.1:** Implement the core Split-Pane layout (Collapsible Side Panel on left, Main placeholder right).
-- [ ] **2.2:** Build the Global Theming Engine (Minimal palette, Dark/Light mode).
-- [ ] **2.3:** Implement Side Panel list items UI (Infinite nesting support for sub-todos).
-- [ ] **2.4:** Build BLoC filters for UI Views: Inbox, Today, This Work Week, This Week Afterwork, This Month, Delegated.
-- [ ] **2.5:** Implement the "Sticky Header" logic: Force Overdue tasks to the top of every filtered list.
-- [ ] **2.6:** Implement Goal logic: Auto-transition to "Completed" when all children are completed.
-- [ ] **2.7:** Implement Todo logic: Require manual transition to "Completed" even if children are done.
+- [x] **2.1:** Implement the core Split-Pane layout (Collapsible Side Panel on left, Main placeholder right).
+- [x] **2.2:** Build the Global Theming Engine (Minimal palette, Dark/Light mode).
+- [x] **2.3:** Implement Side Panel list items UI (Infinite nesting support for sub-todos).
+- [x] **2.4:** Build BLoC filters for UI Views: Inbox, Today, This Work Week, This Week Afterwork, This Month, Delegated.
+- [x] **2.5:** Implement the "Sticky Header" logic: Force Overdue tasks to the top of every filtered list.
+- [x] **2.6:** Implement Goal logic: Auto-transition to "Completed" when all children are completed.
+- [x] **2.7:** Implement Todo logic: Require manual transition to "Completed" even if children are done.
 
 ## 🗺️ Epic 3: Main Calendar & Time Blocking
 - [ ] **3.1:** Implement the Main Calendar View time grid (snapping to 15-minute intervals).
