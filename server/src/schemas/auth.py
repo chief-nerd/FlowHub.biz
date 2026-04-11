@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
-from uuid import UUID
 from datetime import time
-from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, EmailStr
+
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -17,14 +18,14 @@ class UserLogin(BaseModel):
     password: str
 
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    timezone: Optional[str] = None
-    afterwork_start_time: Optional[time] = None
-    password: Optional[str] = None
+    full_name: str | None = None
+    timezone: str | None = None
+    afterwork_start_time: time | None = None
+    password: str | None = None
 
 class User(UserBase):
     id: UUID
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):

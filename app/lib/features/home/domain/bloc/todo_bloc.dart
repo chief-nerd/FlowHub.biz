@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../sync/data/models/todo.dart';
-import '../../../../sync/data/repositories/todo_repository.dart';
+import '../../../sync/data/models/todo.dart';
+import '../../../sync/data/repositories/todo_repository.dart';
 
 // View Types
 enum TodoViewFilter {
@@ -170,7 +170,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
         break;
     }
 
-    final Set<Id> viewTodoIds = viewTodos.map((t) => t.id).toSet();
+    final Set<int> viewTodoIds = viewTodos.map((t) => t.id).toSet();
     final List<Todo> uniqueOverdue = overdueTodos.where((t) => !viewTodoIds.contains(t.id)).toList();
 
     return {

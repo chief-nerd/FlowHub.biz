@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'user.dart';
 import 'goal.dart';
 import 'work_session.dart';
 

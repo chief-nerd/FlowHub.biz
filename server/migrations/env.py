@@ -1,13 +1,14 @@
+import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 from src.core.database import Base
-from src.models import * # Import all models to register them
-import os
+from src.models.goal import Goal  # noqa: F401
+from src.models.todo import Todo  # noqa: F401
+from src.models.user import User  # noqa: F401
+from src.models.work_session import WorkSession  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

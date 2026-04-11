@@ -1,10 +1,6 @@
+
 import pytest
-from httpx import AsyncClient, ASGITransport
-from src.main import app
-from src.core.database import async_session
-from src.models.user import User
-from sqlalchemy.future import select
-import uuid
+
 
 @pytest.mark.asyncio
 async def test_register_user():

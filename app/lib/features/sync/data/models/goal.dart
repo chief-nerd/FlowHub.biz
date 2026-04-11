@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'user.dart';
 import 'todo.dart';
 
 part 'goal.g.dart';

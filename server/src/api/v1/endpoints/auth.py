@@ -1,18 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from src.core.database import get_db
+from src.core.deps import get_current_user
 from src.core.security import (
-    get_password_hash, 
-    verify_password, 
-    create_access_token, 
+    create_access_token,
     create_refresh_token,
-    decode_token
+    get_password_hash,
+    verify_password,
 )
 from src.models.user import User
-from src.schemas.auth import UserCreate, UserLogin, Token, User as UserSchema
-from jose import JWTError
-import uuid
+from src.schemas.auth import Token, UserCreate, UserLogin
+from src.schemas.auth import User as UserSchema
 
 router = APIRouter()
 
@@ -25,7 +26,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
         )
-    
+
     # Create user
     db_user = User(
         email=user_in.email,
@@ -44,20 +45,19 @@ async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
     # In a real scenario, login usually uses OAuth2 password flow, but for now we follow simple POST
     result = await db.execute(select(User).where(User.email == user_in.email))
     user = result.scalar_one_or_none()
-    
+
     if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
-    
+
     return {
         "access_token": create_access_token(user.id),
         "refresh_token": create_refresh_token(user.id),
         "token_type": "bearer",
     }
 
-from src.core.deps import get_current_user
 
 @router.get("/me", response_model=UserSchema)
 async def read_user_me(current_user: User = Depends(get_current_user)):
