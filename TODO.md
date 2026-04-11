@@ -13,7 +13,7 @@
 - [ ] **0.6:** Setup GitHub Actions (or equivalent CI) for automated linting, testing, and Docker builds.
 
 ## 🗺️ Epic 1: Data Layer & Local-First Architecture
-- [ ] **1.1:** Backend: Define SQLAlchemy models for User, Goal, Todo, WorkSession. Setup Alembic migrations.
+- [x] **1.1:** Backend: Define SQLAlchemy models for User, Goal, Todo, WorkSession. Setup Alembic migrations.
 - [ ] **1.2:** Frontend: Define Isar/SQLite schemas mapping to the backend models. Generate Isar accessors.
 - [ ] **1.3:** Backend: Implement JWT Authentication endpoints (Register, Login, Refresh, Me).
 - [ ] **1.4:** Frontend: Implement Auth BLoC and secure token storage.
