@@ -86,8 +86,14 @@ class WidgetbookApp extends StatelessWidget {
               name: 'CalendarGrid',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Default',
+                  name: 'Grid View',
                   builder: (context) => CalendarGrid(
+                    referenceDate: DateTime.now(),
+                    viewMode: context.knobs.list(
+                      label: 'View Mode',
+                      options: CalendarViewMode.values,
+                      initialOption: CalendarViewMode.day,
+                    ),
                     use24HourFormat: context.knobs.boolean(
                       label: '24 Hour Format',
                       initialValue: false,
