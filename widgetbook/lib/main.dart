@@ -55,14 +55,18 @@ class WidgetbookApp extends StatelessWidget {
               name: 'TodoListItem',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Task with Tags',
+                  name: 'Interactive Task',
                   builder: (context) {
-                    final tag1 = Tag()..name = 'RIT'..category = 'customer'..color = '#FF5733';
-                    final tag2 = Tag()..name = 'Urgent'..color = '#FF0000';
+                    final importance = context.knobs.list(
+                      label: 'Importance',
+                      options: TodoImportance.values,
+                      initialOption: TodoImportance.medium,
+                    );
+                    
                     final todo = Todo()
-                      ..title = 'Fix critical bug'
-                      ..status = TodoStatus.inProgress;
-                    todo.tags.addAll([tag1, tag2]);
+                      ..title = 'Task with ${importance.name} importance'
+                      ..status = TodoStatus.inProgress
+                      ..importance = importance;
 
                     return TodoListItem(
                       todo: todo,
@@ -71,11 +75,21 @@ class WidgetbookApp extends StatelessWidget {
                   },
                 ),
                 WidgetbookUseCase(
-                  name: 'Simple Task',
-                  builder: (context) => TodoListItem(
-                    todo: Todo()..title = 'Complete Widgetbook setup',
-                    allTodos: const [],
-                  ),
+                  name: 'Task with Tags',
+                  builder: (context) {
+                    final tag1 = Tag()..name = 'RIT'..category = 'customer'..color = '#FF5733';
+                    final tag2 = Tag()..name = 'Urgent'..color = '#FF0000';
+                    final todo = Todo()
+                      ..title = 'Fix critical bug'
+                      ..status = TodoStatus.inProgress
+                      ..importance = TodoImportance.critical;
+                    todo.tags.addAll([tag1, tag2]);
+
+                    return TodoListItem(
+                      todo: todo,
+                      allTodos: const [],
+                    );
+                  },
                 ),
               ],
             ),
@@ -113,8 +127,8 @@ class WidgetbookApp extends StatelessWidget {
                     final mockBloc = MockTodoBloc();
                     final tag = Tag()..name = 'RIT'..category = 'customer'..color = '#FF5733';
                     final todos = [
-                      Todo()..title = 'Regular Task'..status = TodoStatus.draft,
-                      Todo()..title = 'Overdue Task'..status = TodoStatus.inProgress,
+                      Todo()..title = 'Regular Task'..status = TodoStatus.draft..importance = TodoImportance.medium,
+                      Todo()..title = 'Overdue Task'..status = TodoStatus.inProgress..importance = TodoImportance.high,
                     ];
                     todos[0].tags.add(tag);
 

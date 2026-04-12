@@ -63,6 +63,15 @@ This document outlines the User Stories and manual verification procedures for F
 - **Expected Result:** Task list updates to show only matching tasks; tags are displayed with colors at the end of each todo item.
 - **Status:** ✅ Verified
 
+### **US 2.5: Importance Levels**
+**Story:** As a user, I want to assign importance levels (Critical, High, Medium, Low) to my tasks so that I can visually prioritize my work.
+- **Pre-conditions:** Tasks with different importance levels exist.
+- **Test Steps:**
+    1. Observe the task list.
+    2. Identify tasks with different colors/indicators.
+- **Expected Result:** Tasks show a vertical color strip and an icon matching their importance: Red (Critical), Orange (High), Blue (Medium), Grey (Low).
+- **Status:** ✅ Verified
+
 ---
 
 ## 📅 Epic 3: Main Calendar & Temporal Flow

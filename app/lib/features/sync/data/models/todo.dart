@@ -18,6 +18,13 @@ enum TodoSourceType {
   msTodo,
 }
 
+enum TodoImportance {
+  critical,
+  high,
+  medium,
+  low,
+}
+
 @collection
 class Todo {
   Id id = Isar.autoIncrement;
@@ -44,6 +51,9 @@ class Todo {
   
   @Enumerated(EnumType.name)
   TodoStatus status = TodoStatus.draft;
+
+  @Enumerated(EnumType.name)
+  TodoImportance importance = TodoImportance.medium;
   
   int estimatedDuration = 0; // in minutes
 

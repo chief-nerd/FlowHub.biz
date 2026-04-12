@@ -57,40 +57,46 @@ const TodoSchema = CollectionSchema(
       name: r'goalExternalId',
       type: IsarType.string,
     ),
-    r'ownerExternalId': PropertySchema(
+    r'importance': PropertySchema(
       id: 8,
+      name: r'importance',
+      type: IsarType.string,
+      enumMap: _TodoimportanceEnumValueMap,
+    ),
+    r'ownerExternalId': PropertySchema(
+      id: 9,
       name: r'ownerExternalId',
       type: IsarType.string,
     ),
     r'parentExternalId': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'parentExternalId',
       type: IsarType.string,
     ),
     r'sourceType': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'sourceType',
       type: IsarType.string,
       enumMap: _TodosourceTypeEnumValueMap,
     ),
     r'startDate': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'startDate',
       type: IsarType.dateTime,
     ),
     r'status': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'status',
       type: IsarType.string,
       enumMap: _TodostatusEnumValueMap,
     ),
     r'title': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'title',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -192,6 +198,7 @@ int _todoEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.importance.name.length * 3;
   bytesCount += 3 + object.ownerExternalId.length * 3;
   {
     final value = object.parentExternalId;
@@ -219,13 +226,14 @@ void _todoSerialize(
   writer.writeString(offsets[5], object.externalId);
   writer.writeString(offsets[6], object.externalSourceId);
   writer.writeString(offsets[7], object.goalExternalId);
-  writer.writeString(offsets[8], object.ownerExternalId);
-  writer.writeString(offsets[9], object.parentExternalId);
-  writer.writeString(offsets[10], object.sourceType.name);
-  writer.writeDateTime(offsets[11], object.startDate);
-  writer.writeString(offsets[12], object.status.name);
-  writer.writeString(offsets[13], object.title);
-  writer.writeDateTime(offsets[14], object.updatedAt);
+  writer.writeString(offsets[8], object.importance.name);
+  writer.writeString(offsets[9], object.ownerExternalId);
+  writer.writeString(offsets[10], object.parentExternalId);
+  writer.writeString(offsets[11], object.sourceType.name);
+  writer.writeDateTime(offsets[12], object.startDate);
+  writer.writeString(offsets[13], object.status.name);
+  writer.writeString(offsets[14], object.title);
+  writer.writeDateTime(offsets[15], object.updatedAt);
 }
 
 Todo _todoDeserialize(
@@ -244,17 +252,20 @@ Todo _todoDeserialize(
   object.externalSourceId = reader.readStringOrNull(offsets[6]);
   object.goalExternalId = reader.readStringOrNull(offsets[7]);
   object.id = id;
-  object.ownerExternalId = reader.readString(offsets[8]);
-  object.parentExternalId = reader.readStringOrNull(offsets[9]);
+  object.importance =
+      _TodoimportanceValueEnumMap[reader.readStringOrNull(offsets[8])] ??
+          TodoImportance.critical;
+  object.ownerExternalId = reader.readString(offsets[9]);
+  object.parentExternalId = reader.readStringOrNull(offsets[10]);
   object.sourceType =
-      _TodosourceTypeValueEnumMap[reader.readStringOrNull(offsets[10])] ??
+      _TodosourceTypeValueEnumMap[reader.readStringOrNull(offsets[11])] ??
           TodoSourceType.native;
-  object.startDate = reader.readDateTimeOrNull(offsets[11]);
+  object.startDate = reader.readDateTimeOrNull(offsets[12]);
   object.status =
-      _TodostatusValueEnumMap[reader.readStringOrNull(offsets[12])] ??
+      _TodostatusValueEnumMap[reader.readStringOrNull(offsets[13])] ??
           TodoStatus.draft;
-  object.title = reader.readString(offsets[13]);
-  object.updatedAt = reader.readDateTimeOrNull(offsets[14]);
+  object.title = reader.readString(offsets[14]);
+  object.updatedAt = reader.readDateTimeOrNull(offsets[15]);
   return object;
 }
 
@@ -282,26 +293,41 @@ P _todoDeserializeProp<P>(
     case 7:
       return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (_TodoimportanceValueEnumMap[reader.readStringOrNull(offset)] ??
+          TodoImportance.critical) as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readStringOrNull(offset)) as P;
+    case 11:
       return (_TodosourceTypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TodoSourceType.native) as P;
-    case 11:
-      return (reader.readDateTimeOrNull(offset)) as P;
     case 12:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 13:
       return (_TodostatusValueEnumMap[reader.readStringOrNull(offset)] ??
           TodoStatus.draft) as P;
-    case 13:
-      return (reader.readString(offset)) as P;
     case 14:
+      return (reader.readString(offset)) as P;
+    case 15:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
+const _TodoimportanceEnumValueMap = {
+  r'critical': r'critical',
+  r'high': r'high',
+  r'medium': r'medium',
+  r'low': r'low',
+};
+const _TodoimportanceValueEnumMap = {
+  r'critical': TodoImportance.critical,
+  r'high': TodoImportance.high,
+  r'medium': TodoImportance.medium,
+  r'low': TodoImportance.low,
+};
 const _TodosourceTypeEnumValueMap = {
   r'native': r'native',
   r'github': r'github',
@@ -1519,6 +1545,136 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceEqualTo(
+    TodoImportance value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceGreaterThan(
+    TodoImportance value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceLessThan(
+    TodoImportance value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceBetween(
+    TodoImportance lower,
+    TodoImportance upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'importance',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'importance',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'importance',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'importance',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> importanceIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'importance',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Todo, Todo, QAfterFilterCondition> ownerExternalIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -2612,6 +2768,18 @@ extension TodoQuerySortBy on QueryBuilder<Todo, Todo, QSortBy> {
     });
   }
 
+  QueryBuilder<Todo, Todo, QAfterSortBy> sortByImportance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'importance', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterSortBy> sortByImportanceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'importance', Sort.desc);
+    });
+  }
+
   QueryBuilder<Todo, Todo, QAfterSortBy> sortByOwnerExternalId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerExternalId', Sort.asc);
@@ -2806,6 +2974,18 @@ extension TodoQuerySortThenBy on QueryBuilder<Todo, Todo, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Todo, Todo, QAfterSortBy> thenByImportance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'importance', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterSortBy> thenByImportanceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'importance', Sort.desc);
+    });
+  }
+
   QueryBuilder<Todo, Todo, QAfterSortBy> thenByOwnerExternalId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerExternalId', Sort.asc);
@@ -2948,6 +3128,13 @@ extension TodoQueryWhereDistinct on QueryBuilder<Todo, Todo, QDistinct> {
     });
   }
 
+  QueryBuilder<Todo, Todo, QDistinct> distinctByImportance(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'importance', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Todo, Todo, QDistinct> distinctByOwnerExternalId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3050,6 +3237,12 @@ extension TodoQueryProperty on QueryBuilder<Todo, Todo, QQueryProperty> {
   QueryBuilder<Todo, String?, QQueryOperations> goalExternalIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'goalExternalId');
+    });
+  }
+
+  QueryBuilder<Todo, TodoImportance, QQueryOperations> importanceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'importance');
     });
   }
 

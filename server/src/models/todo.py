@@ -28,6 +28,13 @@ class TodoSourceType(str, enum.Enum):
     MS_TODO = "MS ToDo"
 
 
+class TodoImportance(str, enum.Enum):
+    CRITICAL = "Critical"
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+
+
 class Todo(Base, TimestampMixin):
     __tablename__ = "todos"
 
@@ -58,6 +65,9 @@ class Todo(Base, TimestampMixin):
 
     status: Mapped[TodoStatus] = mapped_column(
         Enum(TodoStatus), default=TodoStatus.DRAFT
+    )
+    importance: Mapped[TodoImportance] = mapped_column(
+        Enum(TodoImportance), default=TodoImportance.MEDIUM
     )
     estimated_duration: Mapped[int] = mapped_column(Integer, default=0)  # in minutes
 

@@ -38,6 +38,19 @@ class _TodoListItemState extends State<TodoListItem> {
     }
   }
 
+  Color _getImportanceColor(TodoImportance importance) {
+    switch (importance) {
+      case TodoImportance.critical:
+        return Colors.red.shade700;
+      case TodoImportance.high:
+        return Colors.orange.shade800;
+      case TodoImportance.medium:
+        return Colors.blue.shade600;
+      case TodoImportance.low:
+        return Colors.grey.shade600;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Memory-based tree construction
@@ -52,68 +65,81 @@ class _TodoListItemState extends State<TodoListItem> {
       children: [
         InkWell(
           onTap: _toggleExpand,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16.0 + (widget.depth * 20.0),
-              top: 8.0,
-              bottom: 8.0,
-              right: 16.0,
-            ),
+          child: IntrinsicHeight(
             child: Row(
               children: [
-                SizedBox(
-                  width: 24,
-                  child: hasChildren
-                      ? Icon(
-                          _isExpanded
-                              ? Icons.keyboard_arrow_down
-                              : Icons.keyboard_arrow_right,
-                          size: 20,
-                        )
-                      : null,
+                // Importance indicator strip
+                Container(
+                  width: 4,
+                  color: _getImportanceColor(widget.todo.importance),
                 ),
-                Icon(
-                  Icons.circle_outlined,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        widget.todo.title,
-                        style: TextStyle(
-                          fontWeight: widget.depth == 0 ? FontWeight.w600 : FontWeight.normal,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 12.0 + (widget.depth * 20.0),
+                      top: 8.0,
+                      bottom: 8.0,
+                      right: 16.0,
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          child: hasChildren
+                              ? Icon(
+                                  _isExpanded
+                                      ? Icons.keyboard_arrow_down
+                                      : Icons.keyboard_arrow_right,
+                                  size: 20,
+                                )
+                              : null,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Tags display
-                      ...widget.todo.tags.map((tag) => Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _parseColor(tag.color).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: _parseColor(tag.color).withOpacity(0.5), width: 0.5),
-                          ),
-                          child: Text(
-                            tag.displayName,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: _parseColor(tag.color),
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Icon(
+                          Icons.circle_outlined,
+                          size: 16,
+                          color: _getImportanceColor(widget.todo.importance),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                widget.todo.title,
+                                style: TextStyle(
+                                  fontWeight: widget.depth == 0 ? FontWeight.w600 : FontWeight.normal,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Tags display
+                              ...widget.todo.tags.map((tag) => Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _parseColor(tag.color).withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: _parseColor(tag.color).withOpacity(0.5), width: 0.5),
+                                  ),
+                                  child: Text(
+                                    tag.displayName,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: _parseColor(tag.color),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                            ],
                           ),
                         ),
-                      )),
-                    ],
+                        if (widget.todo.status == TodoStatus.completed)
+                          const Icon(Icons.check, size: 16, color: Colors.green),
+                      ],
+                    ),
                   ),
                 ),
-                if (widget.todo.status == TodoStatus.completed)
-                  const Icon(Icons.check, size: 16, color: Colors.green),
               ],
             ),
           ),
