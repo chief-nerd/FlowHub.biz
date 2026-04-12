@@ -13,33 +13,31 @@ def test_user_model():
         hashed_password="hash",
         full_name="Test User",
         timezone="UTC",
-        afterwork_start_time=time(18, 0)
+        afterwork_start_time=time(18, 0),
     )
     assert user.email == "test@example.com"
     assert user.afterwork_start_time == time(18, 0)
+
 
 def test_todo_relationships():
     user_id = uuid.uuid4()
     goal_id = uuid.uuid4()
 
-    goal = Goal(
-        id=goal_id,
-        owner_id=user_id,
-        title="Test Goal"
-    )
+    goal = Goal(id=goal_id, owner_id=user_id, title="Test Goal")
 
     todo = Todo(
         owner_id=user_id,
         goal_id=goal_id,
         title="Test Todo",
         status=TodoStatus.IN_PROGRESS,
-        source_type=TodoSourceType.NATIVE
+        source_type=TodoSourceType.NATIVE,
     )
 
     # Mocking relationship back-references as SQLAlchemy would normally do
     todo.goal = goal
     assert todo.goal.title == "Test Goal"
     assert todo.status == TodoStatus.IN_PROGRESS
+
 
 def test_work_session():
     todo_id = uuid.uuid4()
@@ -50,7 +48,7 @@ def test_work_session():
         todo_id=todo_id,
         start_time=start,
         end_time=end,
-        status=WorkSessionStatus.SCHEDULED
+        status=WorkSessionStatus.SCHEDULED,
     )
 
     assert session.status == WorkSessionStatus.SCHEDULED

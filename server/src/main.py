@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="FlowHub API")
 
+
 @app.exception_handler(SQLAlchemyError)
 async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     logger.error(f"Database error: {exc}")
@@ -19,6 +20,7 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "A database error occurred."},
     )
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -28,6 +30,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": exc.errors()},
     )
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unexpected error: {exc}")
@@ -36,11 +39,14 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "An unexpected error occurred."},
     )
 
+
 app.include_router(api_router, prefix="/api/v1")
+
 
 @app.get("/")
 async def root():
     return {"message": "FlowHub API is running"}
+
 
 @app.get("/health")
 async def health():

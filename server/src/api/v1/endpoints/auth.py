@@ -17,7 +17,10 @@ from src.schemas.auth import User as UserSchema
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/register", response_model=UserSchema, status_code=status.HTTP_201_CREATED
+)
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     # Check if user exists
     result = await db.execute(select(User).where(User.email == user_in.email))
@@ -33,12 +36,13 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
         timezone=user_in.timezone,
-        afterwork_start_time=user_in.afterwork_start_time
+        afterwork_start_time=user_in.afterwork_start_time,
     )
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
 
 @router.post("/login", response_model=Token)
 async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
