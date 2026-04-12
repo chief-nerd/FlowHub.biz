@@ -4,7 +4,7 @@
 FlowHub is a self-hostable, offline-first, multi-user productivity platform. It solves tool fragmentation by natively mapping external tasks (GitHub, MS ToDo, Emails) into a unified, calendar-driven interface. It is designed for deep work, strict data sovereignty, and zero-latency interactions via a local-first architecture.
 
 ## 🛠️ Tech Stack & Infrastructure
-* **Monorepo Structure:** `/app` (Frontend) and `/server` (Backend).
+* **Monorepo Structure:** `/app` (Frontend), `/server` (Backend), and `/widgetbook` (Component Stories).
 * **Frontend:** Flutter, BLoC (Strict State Management), GoRouter, Isar (Local Database).
 * **Backend:** Python (FastAPI), PostgreSQL, Redis/Celery (Job queues, webhooks, cron), SQLAlchemy 2.0 (Async)/Alembic.
 * **Deployment:** Containerized via Docker Compose (Nginx reverse proxy, API backend, Flutter Web frontend).
