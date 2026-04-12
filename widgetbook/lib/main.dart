@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -85,8 +87,11 @@ class WidgetbookApp extends StatelessWidget {
               useCases: [
                 WidgetbookUseCase(
                   name: 'Default',
-                  builder: (context) => const Scaffold(
-                    body: CalendarGrid(),
+                  builder: (context) => CalendarGrid(
+                    use24HourFormat: context.knobs.boolean(
+                      label: '24 Hour Format',
+                      initialValue: false,
+                    ),
                   ),
                 ),
               ],
@@ -146,6 +151,17 @@ class WidgetbookApp extends StatelessWidget {
           devices: [
             Devices.ios.iPhone13,
             Devices.android.samsungGalaxyS20,
+          ],
+        ),
+        LocalizationAddon(
+          locales: [
+            const Locale('en', ''),
+          ],
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
         ),
       ],

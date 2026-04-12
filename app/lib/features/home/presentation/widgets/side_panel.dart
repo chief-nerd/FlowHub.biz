@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../domain/bloc/todo_bloc.dart';
 import 'todo_list_item.dart';
 
@@ -21,7 +22,7 @@ class SidePanel extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  _getFilterName(state.activeFilter),
+                  _getFilterName(context, state.activeFilter),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -35,7 +36,7 @@ class SidePanel extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Text(
-                          'Overdue',
+                          AppLocalizations.of(context)!.overdue,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -72,7 +73,7 @@ class SidePanel extends StatelessWidget {
             selected: isSelected,
             selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
             title: Text(
-              _getFilterName(filter),
+              _getFilterName(context, filter),
               style: TextStyle(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? Theme.of(context).colorScheme.primary : null,
@@ -87,14 +88,15 @@ class SidePanel extends StatelessWidget {
     );
   }
 
-  String _getFilterName(TodoViewFilter filter) {
+  String _getFilterName(BuildContext context, TodoViewFilter filter) {
+    final l10n = AppLocalizations.of(context)!;
     switch (filter) {
-      case TodoViewFilter.inbox: return 'Inbox';
-      case TodoViewFilter.today: return 'Today';
-      case TodoViewFilter.thisWorkWeek: return 'This Work Week';
-      case TodoViewFilter.thisWeekAfterwork: return 'This Week Afterwork';
-      case TodoViewFilter.thisMonth: return 'This Month';
-      case TodoViewFilter.delegated: return 'Delegated';
+      case TodoViewFilter.inbox: return l10n.inbox;
+      case TodoViewFilter.today: return l10n.today;
+      case TodoViewFilter.thisWorkWeek: return l10n.thisWorkWeek;
+      case TodoViewFilter.thisWeekAfterwork: return l10n.thisWeekAfterwork;
+      case TodoViewFilter.thisMonth: return l10n.thisMonth;
+      case TodoViewFilter.delegated: return l10n.delegated;
     }
   }
 }

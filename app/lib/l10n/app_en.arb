@@ -1,0 +1,17 @@
+{
+  "appTitle": "FlowHub",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "calendar": "Calendar",
+  "@calendar": {
+    "description": "Label for the calendar section"
+  },
+  "inbox": "Inbox",
+  "today": "Today",
+  "thisWorkWeek": "This Work Week",
+  "thisWeekAfterwork": "This Week Afterwork",
+  "thisMonth": "This Month",
+  "delegated": "Delegated",
+  "overdue": "Overdue"
+}

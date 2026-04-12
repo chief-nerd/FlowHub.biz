@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CalendarGrid extends StatefulWidget {
-  const CalendarGrid({super.key});
+  final bool use24HourFormat;
+
+  const CalendarGrid({
+    super.key,
+    this.use24HourFormat = false,
+  });
 
   @override
   State<CalendarGrid> createState() => _CalendarGridState();
@@ -9,21 +15,30 @@ class CalendarGrid extends StatefulWidget {
 
 class _CalendarGridState extends State<CalendarGrid> {
   final ScrollController _scrollController = ScrollController();
-  // 2 pixels per minute -> 1 hour = 120 pixels.
-  final double _pixelsPerMinute = 2.0; 
+  
+  // Base pixels per minute, can be adjusted for responsiveness
+  double get _pixelsPerMinute {
+    final height = MediaQuery.of(context).size.height;
+    // Ensure at least a minimum height for the grid to be readable
+    // On large screens, we might want to expand it, on small ones keep it scrollable
+    return (height / (12 * 60)).clamp(1.5, 3.0);
+  }
 
   @override
   void initState() {
     super.initState();
-    // Scroll to current time initially
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final now = DateTime.now();
-      final minutesSinceMidnight = now.hour * 60 + now.minute;
-      final offset = (minutesSinceMidnight * _pixelsPerMinute) - 200; // offset a bit
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(offset.clamp(0.0, _scrollController.position.maxScrollExtent));
-      }
+      _scrollToCurrentTime();
     });
+  }
+
+  void _scrollToCurrentTime() {
+    final now = DateTime.now();
+    final minutesSinceMidnight = now.hour * 60 + now.minute;
+    final offset = (minutesSinceMidnight * _pixelsPerMinute) - 200;
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(offset.clamp(0.0, _scrollController.position.maxScrollExtent));
+    }
   }
 
   @override
@@ -36,44 +51,46 @@ class _CalendarGridState extends State<CalendarGrid> {
   Widget build(BuildContext context) {
     final double totalHeight = 24 * 60 * _pixelsPerMinute;
 
-    return SingleChildScrollView(
-      controller: _scrollController,
-      child: SizedBox(
-        height: totalHeight,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              left: 60.0, // Space for time labels
-              child: CustomPaint(
-                painter: _GridPainter(
-                  dividerColor: Theme.of(context).dividerColor,
-                  pixelsPerMinute: _pixelsPerMinute,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          controller: _scrollController,
+          child: SizedBox(
+            height: totalHeight,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  left: 70.0, // Space for time labels
+                  child: CustomPaint(
+                    painter: _GridPainter(
+                      dividerColor: Theme.of(context).dividerColor,
+                      pixelsPerMinute: _pixelsPerMinute,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 70.0,
+                  child: _buildTimeLabels(context),
+                ),
+                _buildCurrentTimeIndicator(),
+              ],
             ),
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 60.0,
-              child: _buildTimeLabels(context),
-            ),
-            // Current Time Indicator
-            _buildCurrentTimeIndicator(),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildTimeLabels(BuildContext context) {
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 24,
-      itemBuilder: (context, index) {
-        final isAM = index < 12;
-        final hour = index == 0 ? 12 : (index > 12 ? index - 12 : index);
-        final amPm = isAM ? 'AM' : 'PM';
+    return Column(
+      children: List.generate(24, (index) {
+        final time = DateTime(2024, 1, 1, index);
+        final format = widget.use24HourFormat ? 'HH:00' : 'h:mm a';
+        final label = DateFormat(format).format(time);
+
         return SizedBox(
           height: 60 * _pixelsPerMinute,
           child: Align(
@@ -81,16 +98,17 @@ class _CalendarGridState extends State<CalendarGrid> {
             child: Transform.translate(
               offset: const Offset(0, -8),
               child: Text(
-                '$hour:00 $amPm',
+                label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
           ),
         );
-      },
+      }),
     );
   }
 
@@ -101,13 +119,13 @@ class _CalendarGridState extends State<CalendarGrid> {
 
     return Positioned(
       top: offset,
-      left: 50.0,
+      left: 60.0,
       right: 0,
       child: Row(
         children: [
           Container(
-            width: 10,
-            height: 10,
+            width: 8,
+            height: 8,
             decoration: const BoxDecoration(
               color: Colors.red,
               shape: BoxShape.circle,
@@ -116,7 +134,7 @@ class _CalendarGridState extends State<CalendarGrid> {
           Expanded(
             child: Container(
               height: 2,
-              color: Colors.red,
+              color: Colors.red.withOpacity(0.5),
             ),
           ),
         ],
@@ -141,7 +159,7 @@ class _GridPainter extends CustomPainter {
       ..strokeWidth = 1.0;
 
     final minorPaint = Paint()
-      ..color = dividerColor.withOpacity(0.3)
+      ..color = dividerColor.withOpacity(0.2)
       ..strokeWidth = 0.5;
 
     final pixelsPerHour = 60 * pixelsPerMinute;

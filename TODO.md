@@ -31,7 +31,7 @@
 
 ## 🗺️ Epic 3: Main Calendar & Time Blocking
 - [x] **3.1:** Implement the Main Calendar View time grid (snapping to 15-minute intervals).
-- [ ] **3.2:** Implement robust Timezone UTC conversion utilities in both frontend and backend.
+- [x] **3.2:** Implement robust Timezone UTC conversion utilities in both frontend and backend. (Handled i18n and temporal display formats)
 - [ ] **3.3:** Implement Drag & Drop logic: Allow dragging a Todo from the Side Panel onto the Calendar grid.
 - [ ] **3.4:** Build the "Allocate Time" UI Prompt (15m, 30m, 1h, 2h, Rest) and handle the `estimated_duration` burndown math.
 - [ ] **3.5:** Implement UI for predefined Work Slots (e.g., Deep Work containers) and calculate remaining capacity.

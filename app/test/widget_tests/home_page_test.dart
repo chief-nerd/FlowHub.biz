@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flowhub/features/home/presentation/pages/home_page.dart';
 import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
@@ -20,6 +22,15 @@ void main() {
 
   Widget createWidgetUnderTest() {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+      ],
       home: RepositoryProvider.value(
         value: todoRepository,
         child: const HomePage(),
@@ -29,7 +40,7 @@ void main() {
 
   testWidgets('HomePage renders SidePanel and MainContent', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(); // Allow BLoC to initialize
+    await tester.pumpAndSettle();
 
     expect(find.text('Inbox'), findsAtLeastNWidgets(1));
     expect(find.byType(CalendarGrid), findsOneWidget);

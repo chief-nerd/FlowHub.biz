@@ -15,10 +15,12 @@ dependencies:
   path_provider: ^2.0.0
   dio: ^5.3.0
   equatable: ^2.0.5
-  intl: ^0.18.0
+  intl: ^0.19.0
   google_fonts: ^6.1.0
   flutter_secure_storage: ^10.0.0
   widgetbook_annotation: 3.6.0
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -30,4 +32,5 @@ dev_dependencies:
   bloc_test: ^9.1.7
 
 flutter:
+  generate: true
   uses-material-design: true
