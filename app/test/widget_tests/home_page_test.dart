@@ -6,9 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flowhub/features/home/presentation/pages/home_page.dart';
 import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
-import 'package:flowhub/features/home/domain/bloc/todo_bloc.dart';
 import 'package:flowhub/features/sync/data/repositories/todo_repository.dart';
-import 'package:flowhub/features/sync/data/models/todo.dart';
 
 class MockTodoRepository extends Mock implements TodoRepository {}
 

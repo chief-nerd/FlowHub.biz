@@ -4,10 +4,10 @@ import 'package:flowhub/shared/layouts/split_pane_layout.dart';
 
 void main() {
   Widget createWidgetUnderTest() {
-    return MaterialApp(
+    return const MaterialApp(
       home: SplitPaneLayout(
-        sidePanel: const Text('Side Panel Content'),
-        mainContent: const Text('Main Content'),
+        sidePanel: Text('Side Panel Content'),
+        mainContent: Text('Main Content'),
       ),
     );
   }

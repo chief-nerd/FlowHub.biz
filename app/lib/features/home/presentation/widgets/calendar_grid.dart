@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/utils/date_utils.dart';
+import '../../../../shared/constants/layout_constants.dart';
 
 enum CalendarViewMode {
   day,
@@ -44,7 +46,7 @@ class _CalendarGridState extends State<CalendarGrid> {
   void _scrollToCurrentTime() {
     final now = DateTime.now();
     final minutesSinceMidnight = now.hour * 60 + now.minute;
-    final offset = (minutesSinceMidnight * _pixelsPerMinute) - 200;
+    final offset = (minutesSinceMidnight * _pixelsPerMinute) - LayoutConstants.calendarGridScrollOffset;
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(offset.clamp(0.0, _scrollController.position.maxScrollExtent));
     }
@@ -56,30 +58,13 @@ class _CalendarGridState extends State<CalendarGrid> {
     super.dispose();
   }
 
-  List<DateTime> _getVisibleDates() {
-    switch (widget.viewMode) {
-      case CalendarViewMode.day:
-        return [widget.referenceDate];
-      case CalendarViewMode.threeDay:
-        return List.generate(3, (i) => widget.referenceDate.add(Duration(days: i)));
-      case CalendarViewMode.workWeek:
-        final monday = widget.referenceDate.subtract(Duration(days: widget.referenceDate.weekday - 1));
-        return List.generate(5, (i) => monday.add(Duration(days: i)));
-      case CalendarViewMode.week:
-        final monday = widget.referenceDate.subtract(Duration(days: widget.referenceDate.weekday - 1));
-        return List.generate(7, (i) => monday.add(Duration(days: i)));
-      case CalendarViewMode.month:
-        return []; // Month view will be handled separately
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.viewMode == CalendarViewMode.month) {
       return _buildMonthView();
     }
 
-    final visibleDates = _getVisibleDates();
+    final visibleDates = FlowDateUtils.getVisibleDates(widget.viewMode, widget.referenceDate);
     final double totalHeight = 24 * 60 * _pixelsPerMinute;
 
     return Column(
@@ -87,7 +72,7 @@ class _CalendarGridState extends State<CalendarGrid> {
         // Headers
         Row(
           children: [
-            const SizedBox(width: 70), // Alignment with time labels
+            const SizedBox(width: LayoutConstants.timeLabelWidth),
             ...visibleDates.map((date) => Expanded(
               child: _buildDateHeader(date),
             )),
@@ -101,7 +86,7 @@ class _CalendarGridState extends State<CalendarGrid> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    left: 70.0,
+                    left: LayoutConstants.timeLabelWidth,
                     child: CustomPaint(
                       painter: _GridPainter(
                         dividerColor: Theme.of(context).dividerColor,
@@ -114,7 +99,7 @@ class _CalendarGridState extends State<CalendarGrid> {
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    width: 70.0,
+                    width: LayoutConstants.timeLabelWidth,
                     child: _buildTimeLabels(context),
                   ),
                   _buildCurrentTimeIndicator(visibleDates),
@@ -129,12 +114,14 @@ class _CalendarGridState extends State<CalendarGrid> {
 
   Widget _buildDateHeader(DateTime date) {
     final isToday = DateUtils.isSameDay(date, DateTime.now());
+    final theme = Theme.of(context);
     return Container(
+      height: LayoutConstants.calendarHeaderHeight,
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor),
-          left: BorderSide(color: Theme.of(context).dividerColor),
+          bottom: BorderSide(color: theme.dividerColor),
+          left: BorderSide(color: theme.dividerColor),
         ),
       ),
       child: Column(
@@ -144,19 +131,19 @@ class _CalendarGridState extends State<CalendarGrid> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isToday ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+              color: isToday ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
           CircleAvatar(
             radius: 16,
-            backgroundColor: isToday ? Theme.of(context).colorScheme.primary : Colors.transparent,
+            backgroundColor: isToday ? theme.colorScheme.primary : Colors.transparent,
             child: Text(
               date.day.toString(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: isToday ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+                color: isToday ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
               ),
             ),
           ),
@@ -166,10 +153,12 @@ class _CalendarGridState extends State<CalendarGrid> {
   }
 
   Widget _buildTimeLabels(BuildContext context) {
+    final format = widget.use24HourFormat ? 'HH:00' : 'h a';
+    final theme = Theme.of(context);
+    
     return Column(
       children: List.generate(24, (index) {
-        final time = DateTime(2024, 1, 1, index);
-        final format = widget.use24HourFormat ? 'HH:00' : 'h a';
+        final time = DateTime(2000, 1, 1, index);
         final label = DateFormat(format).format(time);
 
         return SizedBox(
@@ -183,7 +172,7 @@ class _CalendarGridState extends State<CalendarGrid> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -208,12 +197,9 @@ class _CalendarGridState extends State<CalendarGrid> {
     final minutes = now.hour * 60 + now.minute;
     final offset = minutes * _pixelsPerMinute;
     
-    final columnWidth = (MediaQuery.of(context).size.width - 70 - 280) / visibleDates.length; // 280 is side panel width (approx)
-    // Actually using LayoutBuilder constraints would be better for width but let's use Stack fill + Positioned
-
     return Positioned(
       top: offset,
-      left: 70.0,
+      left: LayoutConstants.timeLabelWidth,
       right: 0,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -247,18 +233,8 @@ class _CalendarGridState extends State<CalendarGrid> {
   }
 
   Widget _buildMonthView() {
-    final firstDayOfMonth = DateTime(widget.referenceDate.year, widget.referenceDate.month, 1);
-    final lastDayOfMonth = DateTime(widget.referenceDate.year, widget.referenceDate.month + 1, 0);
-    final daysInMonth = lastDayOfMonth.day;
-    final firstWeekday = firstDayOfMonth.weekday; // 1 = Mon, 7 = Sun
-
-    // Adjust for Monday start: subtract (firstWeekday - 1)
-    final daysBefore = firstWeekday - 1;
-    final totalDaysToShow = (daysInMonth + daysBefore + 6) ~/ 7 * 7;
-
-    final calendarDays = List.generate(totalDaysToShow, (i) {
-      return firstDayOfMonth.add(Duration(days: i - daysBefore));
-    });
+    final calendarDays = FlowDateUtils.getMonthCalendarDays(widget.referenceDate);
+    final theme = Theme.of(context);
 
     return Column(
       children: [
@@ -273,7 +249,7 @@ class _CalendarGridState extends State<CalendarGrid> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -294,8 +270,8 @@ class _CalendarGridState extends State<CalendarGrid> {
 
               return Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
-                  color: isToday ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3) : null,
+                  border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+                  color: isToday ? theme.colorScheme.primaryContainer.withOpacity(0.3) : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,8 +284,8 @@ class _CalendarGridState extends State<CalendarGrid> {
                           fontSize: 12,
                           fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                           color: isCurrentMonth 
-                            ? (isToday ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface)
-                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                            ? (isToday ? theme.colorScheme.primary : theme.colorScheme.onSurface)
+                            : theme.colorScheme.onSurface.withOpacity(0.3),
                         ),
                       ),
                     ),

@@ -13,5 +13,10 @@
   "thisWeekAfterwork": "This Week Afterwork",
   "thisMonth": "This Month",
   "delegated": "Delegated",
-  "overdue": "Overdue"
+  "overdue": "Overdue",
+  "viewDayShort": "D",
+  "view3DayShort": "3D",
+  "viewWorkWeekShort": "Wk",
+  "viewWeekShort": "W",
+  "viewMonthShort": "M"
 }

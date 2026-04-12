@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/constants/layout_constants.dart';
 
 class SplitPaneLayout extends StatefulWidget {
   final Widget sidePanel;
@@ -16,7 +17,6 @@ class SplitPaneLayout extends StatefulWidget {
 
 class _SplitPaneLayoutState extends State<SplitPaneLayout> {
   bool _isSidePanelVisible = true;
-  final double _sidePanelWidth = 280.0;
 
   void _toggleSidePanel() {
     setState(() {
@@ -33,7 +33,7 @@ class _SplitPaneLayoutState extends State<SplitPaneLayout> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            width: _isSidePanelVisible ? _sidePanelWidth : 0.0,
+            width: _isSidePanelVisible ? LayoutConstants.sidePanelWidth : 0.0,
             child: ClipRect(
               child: widget.sidePanel,
             ),
@@ -45,7 +45,7 @@ class _SplitPaneLayoutState extends State<SplitPaneLayout> {
             child: GestureDetector(
               onTap: _toggleSidePanel,
               child: Container(
-                width: 12.0,
+                width: LayoutConstants.gridDividerWidth,
                 decoration: BoxDecoration(
                   border: Border(
                     right: BorderSide(
