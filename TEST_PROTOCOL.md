@@ -100,5 +100,20 @@ This document outlines the User Stories and manual verification procedures for F
 
 ---
 
+## 🗺️ Epic 4: Plugin Architecture & Integrations
+
+### **US 4.1: Plugin Configuration UI**
+**Story:** As a user, I want to see a list of available plugins and their connection status so that I can manage my external integrations.
+- **Pre-conditions:** App is on Home Page.
+- **Test Steps:**
+    1. Tap the "Settings" button at the bottom of the Side Panel.
+    2. Verify "Account Settings" page opens.
+    3. Observe the list of plugins: GitHub, MS ToDo, Flagged Emails, Frappe.
+    4. Tap "Connect" on a plugin.
+- **Expected Result:** Connection status updates to "Connected" (simulated for now).
+- **Status:** ✅ Verified
+
+---
+
 ## 🛠️ Maintenance Rule
 Every new feature MUST add a corresponding User Story and Test Case to this protocol.

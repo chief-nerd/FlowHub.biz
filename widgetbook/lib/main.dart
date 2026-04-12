@@ -10,6 +10,7 @@ import 'package:flowhub/shared/layouts/split_pane_layout.dart';
 import 'package:flowhub/features/home/presentation/widgets/todo_list_item.dart';
 import 'package:flowhub/features/home/presentation/widgets/side_panel.dart';
 import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
+import 'package:flowhub/features/settings/presentation/pages/account_settings_page.dart';
 import 'package:flowhub/features/home/domain/bloc/todo_bloc.dart';
 import 'package:flowhub/features/sync/data/models/todo.dart';
 
@@ -134,6 +135,20 @@ class WidgetbookApp extends StatelessWidget {
                       child: const SidePanel(),
                     );
                   },
+                ),
+              ],
+            ),
+          ],
+        ),
+        WidgetbookCategory(
+          name: 'Pages',
+          children: [
+            WidgetbookComponent(
+              name: 'AccountSettingsPage',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const AccountSettingsPage(),
                 ),
               ],
             ),

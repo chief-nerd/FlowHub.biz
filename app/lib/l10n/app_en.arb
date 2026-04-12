@@ -18,5 +18,23 @@
   "view3DayShort": "3D",
   "viewWorkWeekShort": "Wk",
   "viewWeekShort": "W",
-  "viewMonthShort": "M"
+  "viewMonthShort": "M",
+  "settings": "Settings",
+  "accountSettings": "Account Settings",
+  "plugins": "Plugins",
+  "connect": "Connect",
+  "connected": "Connected",
+  "disconnect": "Disconnect",
+  "githubPlugin": "GitHub",
+  "msTodoPlugin": "Microsoft To Do",
+  "flaggedEmailsPlugin": "Flagged Emails",
+  "frappePlugin": "Frappe / ERPNext",
+  "pluginDescription": "Sync tasks from {pluginName}",
+  "@pluginDescription": {
+    "placeholders": {
+      "pluginName": {
+        "type": "String"
+      }
+    }
+  }
 }

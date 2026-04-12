@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../domain/bloc/todo_bloc.dart';
+import '../../../settings/presentation/pages/account_settings_page.dart';
 import 'todo_list_item.dart';
 
 class SidePanel extends StatelessWidget {
@@ -50,6 +51,16 @@ class SidePanel extends StatelessWidget {
                     ...state.viewTodos.map((todo) => TodoListItem(todo: todo, allTodos: state.allTodos)),
                   ],
                 ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: Text(AppLocalizations.of(context)!.settings),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const AccountSettingsPage()),
+                  );
+                },
               ),
             ],
           );

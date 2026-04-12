@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.models.goal import Goal
     from src.models.todo import Todo
+    from src.models.plugin_config import PluginConfig
 
 from sqlalchemy import String, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,4 +32,7 @@ class User(Base, TimestampMixin):
     )
     assigned_todos: Mapped[list["Todo"]] = relationship(
         back_populates="assignee", foreign_keys="Todo.assignee_id"
+    )
+    plugin_configs: Mapped[list["PluginConfig"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
     )
