@@ -1,16 +1,28 @@
-# widgetbook
+# FlowHub Widgetbook 📓
 
-A new Flutter project.
+A standalone storybook for the FlowHub design system and UI components.
 
-## Getting Started
+## 🛠️ Purpose
+The Widgetbook is used to:
+-   Develop UI components in isolation from the main app logic.
+-   Test responsiveness using different device frames.
+-   Verify internationalization (i18n) strings in real-time.
+-   Provide a "live" documentation of the application's widgets.
 
-This project is a starting point for a Flutter application.
+## 🏗️ Structure
+The Widgetbook is a separate Flutter application that depends on the `/app` project via a path dependency.
 
-A few resources to get you started if this is your first Flutter project:
+### Manual Configuration
+To ensure maximum stability and avoid generation conflicts, the stories in this project are manually registered in `lib/main.dart`. This allows for complex mocking (e.g., using `Mocktail` for BLoCs) without fighting with automated generators.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🚀 Running Widgetbook
+```bash
+cd widgetbook
+fvm flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🧩 Featured Components
+-   **SplitPaneLayout**: Test the collapsible side panel.
+-   **CalendarGrid**: Verify 12h/24h formats and multi-day view modes.
+-   **TodoListItem**: Preview importance levels and hierarchical tags.
+-   **AccountSettingsPage**: Review plugin connection flows.
