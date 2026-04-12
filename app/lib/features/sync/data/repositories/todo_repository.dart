@@ -1,116 +1,111 @@
-import 'package:isar/isar.dart';
-import '../models/todo.dart';
-import '../models/goal.dart';
+import 'package:drift/drift.dart';
+import 'package:rxdart/rxdart.dart';
+import '../../../../core/db/app_database.dart';
+import '../../../../core/models/enums.dart';
 
 class TodoRepository {
-  final Isar isar;
+  final AppDatabase db;
 
-  TodoRepository(this.isar);
+  TodoRepository(this.db);
 
-  Future<List<Todo>> getAllTodos() async {
-    return await isar.todos.where().findAll();
+  Future<List<TodoWithTags>> getAllTodos() async {
+    final todos = await db.select(db.todos).get();
+    final result = <TodoWithTags>[];
+    for (final todo in todos) {
+      final tags = await _getTagsForTodo(todo.externalId);
+      result.add(TodoWithTags(todo, tags));
+    }
+    return result;
   }
 
-  Future<Todo?> getTodoById(Id id) async {
-    return await isar.todos.get(id);
+  Future<TodoWithTags?> getTodoById(String externalId) async {
+    final todo = await (db.select(db.todos)..where((t) => t.externalId.equals(externalId))).getSingleOrNull();
+    if (todo == null) return null;
+    final tags = await _getTagsForTodo(externalId);
+    return TodoWithTags(todo, tags);
   }
 
-  Future<void> saveTodo(Todo todo) async {
-    await isar.writeTxn(() async {
-      await isar.todos.put(todo);
-      await todo.goal.save();
-      await todo.parent.save();
+  Future<List<Tag>> _getTagsForTodo(String todoExternalId) async {
+    final query = db.select(db.tags).join([
+      innerJoin(db.todoTags, db.todoTags.tagExternalId.equalsExp(db.tags.externalId)),
+    ])..where(db.todoTags.todoExternalId.equals(todoExternalId));
+    
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(db.tags)).toList();
+  }
+
+  Future<void> saveTodo(Todo todo, {List<String> tagIds = const []}) async {
+    await db.transaction(() async {
+      await db.into(db.todos).insertOnConflictUpdate(todo);
+
+      // Update tags
+      await (db.delete(db.todoTags)..where((t) => t.todoExternalId.equals(todo.externalId))).go();
+      for (final tagId in tagIds) {
+        await db.into(db.todoTags).insert(TodoTag(todoExternalId: todo.externalId, tagExternalId: tagId));
+      }
 
       // Epic 2.6: Auto-transition Goal to 'Completed' when all children are completed.
       if (todo.goalExternalId != null) {
-        final goal = await isar.goals.filter().externalIdEqualTo(todo.goalExternalId!).findFirst();
-        if (goal != null) {
-          final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
-          
-          bool allCompleted = true;
-          if (allGoalTodos.isEmpty) {
-            allCompleted = false;
-          } else {
-            for (final t in allGoalTodos) {
-              if (t.status != TodoStatus.completed) {
-                allCompleted = false;
-                break;
-              }
-            }
-          }
-          
-          if (goal.isCompleted != allCompleted) {
-            goal.isCompleted = allCompleted;
-            await isar.goals.put(goal);
-          }
+        final goalExternalId = todo.goalExternalId!;
+        final allGoalTodos = await (db.select(db.todos)..where((t) => t.goalExternalId.equals(goalExternalId))).get();
+        
+        bool allCompleted = allGoalTodos.isNotEmpty && allGoalTodos.every((t) => t.status == TodoStatus.completed);
+        
+        if (allCompleted) {
+          // Logic to update goal status would go here
         }
       }
-
-      // Epic 2.7: Todo logic: Require manual transition to "Completed" even if children are done.
-      // Therefore, we DO NOT auto-complete parent Todos here. They stay in their current status.
     });
   }
 
-  Future<void> deleteTodo(Id id) async {
-    await isar.writeTxn(() async {
-      final todo = await isar.todos.get(id);
-      if (todo != null) {
-        final goalExternalId = todo.goalExternalId;
-        final externalId = todo.externalId;
-        
-        // Recursively delete sub-todos
-        if (externalId != null) {
-          await _deleteSubTodosRecursive(externalId);
-        }
-        
-        await isar.todos.delete(id);
-        
-        if (goalExternalId != null) {
-          final goal = await isar.goals.filter().externalIdEqualTo(goalExternalId).findFirst();
-          if (goal != null) {
-            final allGoalTodos = await isar.todos.filter().goalExternalIdEqualTo(goal.externalId).findAll();
-            
-            bool allCompleted = true;
-            if (allGoalTodos.isEmpty) {
-              allCompleted = false;
-            } else {
-              for (final t in allGoalTodos) {
-                if (t.status != TodoStatus.completed) {
-                  allCompleted = false;
-                  break;
-                }
-              }
-            }
-            
-            if (goal.isCompleted != allCompleted) {
-              goal.isCompleted = allCompleted;
-              await isar.goals.put(goal);
-            }
-          }
-        }
-      }
+  Future<void> deleteTodo(String externalId) async {
+    await db.transaction(() async {
+      await _deleteSubTodosRecursive(externalId);
+      await (db.delete(db.todos)..where((t) => t.externalId.equals(externalId))).go();
     });
   }
 
   Future<void> _deleteSubTodosRecursive(String parentExternalId) async {
-    final subTodos = await isar.todos.filter().parentExternalIdEqualTo(parentExternalId).findAll();
+    final subTodos = await (db.select(db.todos)..where((t) => t.parentExternalId.equals(parentExternalId))).get();
     for (final child in subTodos) {
-      if (child.externalId != null) {
-        await _deleteSubTodosRecursive(child.externalId!);
-      }
-      await isar.todos.delete(child.id);
+      await _deleteSubTodosRecursive(child.externalId);
+      await (db.delete(db.todos)..where((t) => t.externalId.equals(child.externalId))).go();
     }
   }
 
-  Stream<List<Todo>> watchTodos() {
-    return isar.todos.where().watch(fireImmediately: true);
+  Stream<List<TodoWithTags>> watchTodos() {
+    return db.select(db.todos).watch().switchMap((todos) {
+      if (todos.isEmpty) return Stream.value([]);
+      
+      final streams = todos.map((todo) {
+        return (db.select(db.tags).join([
+          innerJoin(db.todoTags, db.todoTags.tagExternalId.equalsExp(db.tags.externalId)),
+        ])..where(db.todoTags.todoExternalId.equals(todo.externalId)))
+        .watch()
+        .map((rows) => TodoWithTags(todo, rows.map((row) => row.readTable(db.tags)).toList()));
+      });
+      
+      return Rx.combineLatestList(streams);
+    });
   }
 
-  Future<List<Todo>> getTodosByGoal(String goalExternalId) async {
-    return await isar.todos.filter().goalExternalIdEqualTo(goalExternalId).findAll();
+  Future<List<TodoWithTags>> getTodosByGoal(String goalExternalId) async {
+    final todos = await (db.select(db.todos)..where((t) => t.goalExternalId.equals(goalExternalId))).get();
+    final result = <TodoWithTags>[];
+    for (final todo in todos) {
+      final tags = await _getTagsForTodo(todo.externalId);
+      result.add(TodoWithTags(todo, tags));
+    }
+    return result;
   }
 
-  Future<List<Todo>> getSubTodos(String parentExternalId) async {
-    return await isar.todos.filter().parentExternalIdEqualTo(parentExternalId).findAll();
+  Future<List<TodoWithTags>> getSubTodos(String parentExternalId) async {
+    final todos = await (db.select(db.todos)..where((t) => t.parentExternalId.equals(parentExternalId))).get();
+    final result = <TodoWithTags>[];
+    for (final todo in todos) {
+      final tags = await _getTagsForTodo(todo.externalId);
+      result.add(TodoWithTags(todo, tags));
+    }
+    return result;
   }
 }

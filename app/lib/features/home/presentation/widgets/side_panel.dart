@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../domain/bloc/todo_bloc.dart';
+import '../../../../core/models/enums.dart';
 import '../../../settings/presentation/pages/account_settings_page.dart';
 import 'todo_list_item.dart';
 
@@ -55,10 +56,10 @@ class SidePanel extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ...state.overdueTodos.map((todo) => TodoListItem(todo: todo, allTodos: state.allTodos)),
+                      ...state.overdueTodos.map((todo) => TodoListItem(todoWithTags: todo, allTodos: state.allTodos)),
                       const Divider(),
                     ],
-                    ...state.viewTodos.map((todo) => TodoListItem(todo: todo, allTodos: state.allTodos)),
+                    ...state.viewTodos.map((todo) => TodoListItem(todoWithTags: todo, allTodos: state.allTodos)),
                   ],
                 ),
               ),

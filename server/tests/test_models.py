@@ -2,12 +2,10 @@ import uuid
 from datetime import datetime, time, timedelta
 
 from src.models.goal import Goal
+from src.models.tag import Tag
 from src.models.todo import Todo, TodoSourceType, TodoStatus
 from src.models.user import User
 from src.models.work_session import WorkSession, WorkSessionStatus
-
-
-from src.models.tag import Tag
 
 
 def test_tag_display_name():

@@ -1,7 +1,16 @@
 include: package:flutter_lints/rules.yaml
 
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+  errors:
+    unnecessary_null_comparison: ignore
+    unnecessary_non_null_assertion: ignore
+
 linter:
   rules:
     - prefer_const_constructors
     - prefer_const_literals_to_create_immutables
     - public_member_api_docs: false
+    - avoid_print: true
+    - prefer_final_fields: true

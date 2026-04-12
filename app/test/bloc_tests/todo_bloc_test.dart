@@ -1,10 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:flowhub/features/home/domain/bloc/todo_bloc.dart';
-import 'package:flowhub/features/sync/data/models/todo.dart';
-import 'package:flowhub/features/sync/data/models/tag.dart';
+import 'package:flowhub/core/models/enums.dart';
 import 'package:flowhub/features/sync/data/repositories/todo_repository.dart';
 import 'package:flowhub/features/sync/data/repositories/tag_repository.dart';
 

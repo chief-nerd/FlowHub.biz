@@ -86,6 +86,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<ConnectPlugin>((event, emit) async {
       if (state is SettingsLoaded) {
         final currentPlugins = (state as SettingsLoaded).plugins;
+        // Logic to trigger OAuth or key entry would go here
+        // For now, optimistic update
         final updatedPlugins = currentPlugins.map((p) {
           if (p.type == event.type) {
             return PluginStatus(type: p.type, isConnected: true, accountName: 'User Account');

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../presentation/widgets/calendar_grid.dart';
+import '../../../../core/models/enums.dart';
 
 // Events
 abstract class CalendarEvent extends Equatable {

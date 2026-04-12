@@ -2,19 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../shared/constants/layout_constants.dart';
-
-enum CalendarViewMode {
-  day,
-  threeDay,
-  workWeek,
-  week,
-  month,
-}
+import '../../../../core/models/enums.dart';
 
 class CalendarGrid extends StatefulWidget {
   final bool use24HourFormat;
   final CalendarViewMode viewMode;
   final DateTime referenceDate;
+
+  static const double timeLabelWidth = 70.0;
+  static const double gridScrollOffset = 200.0;
 
   const CalendarGrid({
     super.key,
@@ -43,10 +39,18 @@ class _CalendarGridState extends State<CalendarGrid> {
     });
   }
 
+  @override
+  void didUpdateWidget(CalendarGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewMode != widget.viewMode || oldWidget.referenceDate != widget.referenceDate) {
+      // Potentially re-scroll or adjust
+    }
+  }
+
   void _scrollToCurrentTime() {
     final now = DateTime.now();
     final minutesSinceMidnight = now.hour * 60 + now.minute;
-    final offset = (minutesSinceMidnight * _pixelsPerMinute) - LayoutConstants.calendarGridScrollOffset;
+    final offset = (minutesSinceMidnight * _pixelsPerMinute) - CalendarGrid.gridScrollOffset;
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(offset.clamp(0.0, _scrollController.position.maxScrollExtent));
     }
@@ -72,7 +76,7 @@ class _CalendarGridState extends State<CalendarGrid> {
         // Headers
         Row(
           children: [
-            const SizedBox(width: LayoutConstants.timeLabelWidth),
+            const SizedBox(width: CalendarGrid.timeLabelWidth),
             ...visibleDates.map((date) => Expanded(
               child: _buildDateHeader(date),
             )),
@@ -86,7 +90,7 @@ class _CalendarGridState extends State<CalendarGrid> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    left: LayoutConstants.timeLabelWidth,
+                    left: CalendarGrid.timeLabelWidth,
                     child: CustomPaint(
                       painter: _GridPainter(
                         dividerColor: Theme.of(context).dividerColor,
@@ -99,7 +103,7 @@ class _CalendarGridState extends State<CalendarGrid> {
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    width: LayoutConstants.timeLabelWidth,
+                    width: CalendarGrid.timeLabelWidth,
                     child: _buildTimeLabels(context),
                   ),
                   _buildCurrentTimeIndicator(visibleDates),
@@ -158,7 +162,7 @@ class _CalendarGridState extends State<CalendarGrid> {
     
     return Column(
       children: List.generate(24, (index) {
-        final time = DateTime(2000, 1, 1, index);
+        final time = DateTime(2000, 1, 1, index); // Arbitrary day for formatting
         final label = DateFormat(format).format(time);
 
         return SizedBox(
@@ -199,7 +203,7 @@ class _CalendarGridState extends State<CalendarGrid> {
     
     return Positioned(
       top: offset,
-      left: LayoutConstants.timeLabelWidth,
+      left: CalendarGrid.timeLabelWidth,
       right: 0,
       child: LayoutBuilder(
         builder: (context, constraints) {

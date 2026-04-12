@@ -1,32 +1,27 @@
-import 'package:isar/isar.dart';
-import '../models/goal.dart';
+import '../../../../core/db/app_database.dart';
 
 class GoalRepository {
-  final Isar isar;
+  final AppDatabase db;
 
-  GoalRepository(this.isar);
+  GoalRepository(this.db);
 
   Future<List<Goal>> getAllGoals() async {
-    return await isar.goals.where().findAll();
+    return await db.select(db.goals).get();
   }
 
-  Future<Goal?> getGoalById(Id id) async {
-    return await isar.goals.get(id);
+  Future<Goal?> getGoalById(String externalId) async {
+    return await (db.select(db.goals)..where((g) => g.externalId.equals(externalId))).getSingleOrNull();
   }
 
   Future<void> saveGoal(Goal goal) async {
-    await isar.writeTxn(() async {
-      await isar.goals.put(goal);
-    });
+    await db.into(db.goals).insertOnConflictUpdate(goal);
   }
 
-  Future<void> deleteGoal(Id id) async {
-    await isar.writeTxn(() async {
-      await isar.goals.delete(id);
-    });
+  Future<void> deleteGoal(String externalId) async {
+    await (db.delete(db.goals)..where((g) => g.externalId.equals(externalId))).go();
   }
 
   Stream<List<Goal>> watchGoals() {
-    return isar.goals.where().watch(fireImmediately: true);
+    return db.select(db.goals).watch();
   }
 }

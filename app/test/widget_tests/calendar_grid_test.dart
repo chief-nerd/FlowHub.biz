@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
+import 'package:flowhub/core/models/enums.dart';
 
 void main() {
   final referenceDate = DateTime(2024, 1, 1);

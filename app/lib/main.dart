@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'core/api/api_client.dart';
-import 'core/db/database_service.dart';
+import 'core/db/app_database.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/sync/data/repositories/goal_repository.dart';
 import 'features/sync/data/repositories/todo_repository.dart';
@@ -15,8 +15,7 @@ import 'shared/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  final databaseService = DatabaseService();
-  await databaseService.init();
+  final db = AppDatabase();
 
   final apiClient = ApiClient();
   
@@ -24,10 +23,10 @@ void main() async {
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider(create: (context) => AuthRepository(apiClient)),
-        RepositoryProvider(create: (context) => GoalRepository(databaseService.isar)),
-        RepositoryProvider(create: (context) => TodoRepository(databaseService.isar)),
-        RepositoryProvider(create: (context) => WorkSessionRepository(databaseService.isar)),
-        RepositoryProvider(create: (context) => TagRepository(databaseService.isar)),
+        RepositoryProvider(create: (context) => GoalRepository(db)),
+        RepositoryProvider(create: (context) => TodoRepository(db)),
+        RepositoryProvider(create: (context) => WorkSessionRepository(db)),
+        RepositoryProvider(create: (context) => TagRepository(db)),
       ],
       child: const MyApp(),
     ),

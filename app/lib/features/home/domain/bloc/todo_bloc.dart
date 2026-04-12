@@ -1,20 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../../sync/data/models/todo.dart';
-import '../../../sync/data/models/tag.dart';
+import '../../../../core/db/app_database.dart';
+import '../../../../core/models/enums.dart';
 import '../../../sync/data/repositories/todo_repository.dart';
 import '../../../sync/data/repositories/tag_repository.dart';
-
-// View Types
-enum TodoViewFilter {
-  inbox,
-  today,
-  thisWorkWeek,
-  thisWeekAfterwork,
-  thisMonth,
-  delegated,
-}
 
 // Events
 abstract class TodoEvent extends Equatable {
@@ -33,7 +23,7 @@ class ChangeViewFilter extends TodoEvent {
 }
 
 class ChangeTagFilter extends TodoEvent {
-  final String? tagFilter; // Can be category or name
+  final String? tagFilter;
   const ChangeTagFilter(this.tagFilter);
   @override
   List<Object?> get props => [tagFilter];
@@ -51,9 +41,9 @@ class TodoInitial extends TodoState {}
 class TodoLoading extends TodoState {}
 
 class TodoLoaded extends TodoState {
-  final List<Todo> allTodos;
-  final List<Todo> viewTodos;
-  final List<Todo> overdueTodos;
+  final List<TodoWithTags> allTodos;
+  final List<TodoWithTags> viewTodos;
+  final List<TodoWithTags> overdueTodos;
   final List<Tag> allTags;
   final TodoViewFilter activeFilter;
   final String? activeTagFilter;
@@ -95,7 +85,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
   Future<void> _onLoadTodos(LoadTodos event, Emitter<TodoState> emit) async {
     emit(TodoLoading());
     try {
-      final combinedStream = Rx.combineLatest2<List<Todo>, List<Tag>, Map<String, dynamic>>(
+      final combinedStream = Rx.combineLatest2<List<TodoWithTags>, List<Tag>, Map<String, dynamic>>(
         todoRepository.watchTodos(),
         tagRepository.watchTags(),
         (todos, tags) => {'todos': todos, 'tags': tags},
@@ -104,7 +94,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       await emit.forEach<Map<String, dynamic>>(
         combinedStream,
         onData: (data) {
-          final todos = data['todos'] as List<Todo>;
+          final todos = data['todos'] as List<TodoWithTags>;
           final tags = data['tags'] as List<Tag>;
           
           final filter = state is TodoLoaded 
@@ -162,72 +152,67 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     }
   }
 
-  Map<String, List<Todo>> _applyFilter(List<Todo> todos, TodoViewFilter filter, String? tagFilter) {
+  Map<String, List<TodoWithTags>> _applyFilter(List<TodoWithTags> todos, TodoViewFilter filter, String? tagFilter) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Initial base filter by TodoViewFilter
-    List<Todo> baseViewTodos = [];
+    List<TodoWithTags> baseViewTodos = [];
 
     switch (filter) {
       case TodoViewFilter.inbox:
-        baseViewTodos = todos.where((t) => t.status != TodoStatus.completed && t.dueDate == null && t.parentExternalId == null).toList();
+        baseViewTodos = todos.where((t) => t.todo.status != TodoStatus.completed && t.todo.dueDate == null && t.todo.parentExternalId == null).toList();
         break;
 
       case TodoViewFilter.today:
         baseViewTodos = todos.where((t) {
-          if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-          return t.dueDate!.year == now.year &&
-                 t.dueDate!.month == now.month &&
-                 t.dueDate!.day == now.day;
+          if (t.todo.status == TodoStatus.completed || t.todo.dueDate == null || t.todo.parentExternalId != null) return false;
+          return t.todo.dueDate!.year == now.year &&
+                 t.todo.dueDate!.month == now.month &&
+                 t.todo.dueDate!.day == now.day;
         }).toList();
         break;
 
       case TodoViewFilter.thisWorkWeek:
         baseViewTodos = todos.where((t) {
-          if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-          if (t.dueDate!.isBefore(today)) return false;
-          final diff = t.dueDate!.difference(today).inDays;
-          return diff >= 0 && diff <= 7 && t.dueDate!.weekday <= 5;
+          if (t.todo.status == TodoStatus.completed || t.todo.dueDate == null || t.todo.parentExternalId != null) return false;
+          if (t.todo.dueDate!.isBefore(today)) return false;
+          final diff = t.todo.dueDate!.difference(today).inDays;
+          return diff >= 0 && diff <= 7 && t.todo.dueDate!.weekday <= 5;
         }).toList();
         break;
 
       case TodoViewFilter.thisWeekAfterwork:
         baseViewTodos = todos.where((t) {
-          if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-          if (t.dueDate!.isBefore(today)) return false;
-          final diff = t.dueDate!.difference(today).inDays;
-          return diff >= 0 && diff <= 7 && t.dueDate!.weekday > 5;
+          if (t.todo.status == TodoStatus.completed || t.todo.dueDate == null || t.todo.parentExternalId != null) return false;
+          if (t.todo.dueDate!.isBefore(today)) return false;
+          final diff = t.todo.dueDate!.difference(today).inDays;
+          return diff >= 0 && diff <= 7 && t.todo.dueDate!.weekday > 5;
         }).toList();
         break;
 
       case TodoViewFilter.thisMonth:
         baseViewTodos = todos.where((t) {
-          if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-          if (t.dueDate!.isBefore(today)) return false;
-          return t.dueDate!.year == now.year && t.dueDate!.month == now.month;
+          if (t.todo.status == TodoStatus.completed || t.todo.dueDate == null || t.todo.parentExternalId != null) return false;
+          if (t.todo.dueDate!.isBefore(today)) return false;
+          return t.todo.dueDate!.year == now.year && t.todo.dueDate!.month == now.month;
         }).toList();
         break;
 
       case TodoViewFilter.delegated:
-        baseViewTodos = todos.where((t) => t.assigneeExternalId != null && t.assigneeExternalId != t.ownerExternalId && t.parentExternalId == null).toList();
+        baseViewTodos = todos.where((t) => t.todo.assigneeExternalId != null && t.todo.assigneeExternalId != t.todo.ownerExternalId && t.todo.parentExternalId == null).toList();
         break;
     }
 
-    // Apply secondary Tag filter if active
-    List<Todo> viewTodos = baseViewTodos;
+    List<TodoWithTags> viewTodos = baseViewTodos;
     if (tagFilter != null && tagFilter.isNotEmpty) {
       viewTodos = baseViewTodos.where((t) {
-        // Check if any tag of this todo matches the filter (by name or category)
         return t.tags.any((tag) => tag.name == tagFilter || tag.category == tagFilter);
       }).toList();
     }
 
-    // Identify all overdue tasks (regardless of tag filter? or should they also be filtered? 
-    // Usually overdue are pinned, maybe tag filter should also apply to them)
     final overdueTodos = todos.where((t) {
-      if (t.status == TodoStatus.completed || t.dueDate == null || t.parentExternalId != null) return false;
-      bool isOverdue = t.dueDate!.isBefore(today);
+      if (t.todo.status == TodoStatus.completed || t.todo.dueDate == null || t.todo.parentExternalId != null) return false;
+      bool isOverdue = t.todo.dueDate!.isBefore(today);
       if (!isOverdue) return false;
       
       if (tagFilter != null && tagFilter.isNotEmpty) {
@@ -236,8 +221,8 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       return true;
     }).toList();
 
-    final Set<int> viewTodoIds = viewTodos.map((t) => t.id).toSet();
-    final List<Todo> uniqueOverdue = overdueTodos.where((t) => !viewTodoIds.contains(t.id)).toList();
+    final Set<String> viewTodoIds = viewTodos.map((t) => t.todo.externalId).toSet();
+    final List<TodoWithTags> uniqueOverdue = overdueTodos.where((t) => !viewTodoIds.contains(t.todo.externalId)).toList();
 
     return {
       'view': viewTodos,

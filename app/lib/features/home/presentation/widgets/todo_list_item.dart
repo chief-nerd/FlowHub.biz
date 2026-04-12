@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../sync/data/models/todo.dart';
+import '../../../../core/db/app_database.dart';
+import '../../../../core/models/enums.dart';
 
 class TodoListItem extends StatefulWidget {
-  final Todo todo;
-  final List<Todo> allTodos;
+  final TodoWithTags todoWithTags;
+  final List<TodoWithTags> allTodos;
   final int depth;
 
   const TodoListItem({
     super.key,
-    required this.todo,
+    required this.todoWithTags,
     required this.allTodos,
     this.depth = 0,
   });
@@ -53,10 +54,11 @@ class _TodoListItemState extends State<TodoListItem> {
 
   @override
   Widget build(BuildContext context) {
+    final todo = widget.todoWithTags.todo;
+    final tags = widget.todoWithTags.tags;
+
     // Memory-based tree construction
-    final subTodos = widget.todo.externalId != null 
-        ? widget.allTodos.where((t) => t.parentExternalId == widget.todo.externalId).toList()
-        : <Todo>[];
+    final subTodos = widget.allTodos.where((t) => t.todo.parentExternalId == todo.externalId).toList();
         
     final hasChildren = subTodos.isNotEmpty;
 
@@ -71,7 +73,7 @@ class _TodoListItemState extends State<TodoListItem> {
                 // Importance indicator strip
                 Container(
                   width: 4,
-                  color: _getImportanceColor(widget.todo.importance),
+                  color: _getImportanceColor(todo.importance),
                 ),
                 Expanded(
                   child: Padding(
@@ -97,7 +99,7 @@ class _TodoListItemState extends State<TodoListItem> {
                         Icon(
                           Icons.circle_outlined,
                           size: 16,
-                          color: _getImportanceColor(widget.todo.importance),
+                          color: _getImportanceColor(todo.importance),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -105,14 +107,14 @@ class _TodoListItemState extends State<TodoListItem> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                widget.todo.title,
+                                todo.title,
                                 style: TextStyle(
                                   fontWeight: widget.depth == 0 ? FontWeight.w600 : FontWeight.normal,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               // Tags display
-                              ...widget.todo.tags.map((tag) => Padding(
+                              ...tags.map((tag) => Padding(
                                 padding: const EdgeInsets.only(right: 4.0),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -122,7 +124,7 @@ class _TodoListItemState extends State<TodoListItem> {
                                     border: Border.all(color: _parseColor(tag.color).withOpacity(0.5), width: 0.5),
                                   ),
                                   child: Text(
-                                    tag.displayName,
+                                    tag.category != null ? '${tag.category}/${tag.name}' : tag.name,
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: _parseColor(tag.color),
@@ -134,7 +136,7 @@ class _TodoListItemState extends State<TodoListItem> {
                             ],
                           ),
                         ),
-                        if (widget.todo.status == TodoStatus.completed)
+                        if (todo.status == TodoStatus.completed)
                           const Icon(Icons.check, size: 16, color: Colors.green),
                       ],
                     ),
@@ -147,7 +149,7 @@ class _TodoListItemState extends State<TodoListItem> {
         if (_isExpanded && hasChildren)
           ...subTodos.map(
             (child) => TodoListItem(
-              todo: child,
+              todoWithTags: child,
               allTodos: widget.allTodos,
               depth: widget.depth + 1,
             ),

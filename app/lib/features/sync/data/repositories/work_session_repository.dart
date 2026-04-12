@@ -1,33 +1,27 @@
-import 'package:isar/isar.dart';
-import '../models/work_session.dart';
+import '../../../../core/db/app_database.dart';
 
 class WorkSessionRepository {
-  final Isar isar;
+  final AppDatabase db;
 
-  WorkSessionRepository(this.isar);
+  WorkSessionRepository(this.db);
 
   Future<List<WorkSession>> getAllWorkSessions() async {
-    return await isar.workSessions.where().findAll();
+    return await db.select(db.workSessions).get();
   }
 
-  Future<WorkSession?> getWorkSessionById(Id id) async {
-    return await isar.workSessions.get(id);
+  Future<WorkSession?> getWorkSessionById(String externalId) async {
+    return await (db.select(db.workSessions)..where((s) => s.externalId.equals(externalId))).getSingleOrNull();
   }
 
   Future<void> saveWorkSession(WorkSession session) async {
-    await isar.writeTxn(() async {
-      await isar.workSessions.put(session);
-      await session.todo.save();
-    });
+    await db.into(db.workSessions).insertOnConflictUpdate(session);
   }
 
-  Future<void> deleteWorkSession(Id id) async {
-    await isar.writeTxn(() async {
-      await isar.workSessions.delete(id);
-    });
+  Future<void> deleteWorkSession(String externalId) async {
+    await (db.delete(db.workSessions)..where((s) => s.externalId.equals(externalId))).go();
   }
 
   Future<List<WorkSession>> getSessionsByTodo(String todoExternalId) async {
-    return await isar.workSessions.filter().todoExternalIdEqualTo(todoExternalId).findAll();
+    return await (db.select(db.workSessions)..where((s) => s.todoExternalId.equals(todoExternalId))).get();
   }
 }

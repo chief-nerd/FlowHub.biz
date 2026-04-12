@@ -1,28 +1,23 @@
-import 'package:isar/isar.dart';
-import '../models/tag.dart';
+import '../../../../core/db/app_database.dart';
 
 class TagRepository {
-  final Isar isar;
+  final AppDatabase db;
 
-  TagRepository(this.isar);
+  TagRepository(this.db);
 
   Stream<List<Tag>> watchTags() {
-    return isar.tags.where().watch(fireImmediately: true);
+    return db.select(db.tags).watch();
   }
 
   Future<List<Tag>> getAllTags() async {
-    return isar.tags.where().findAll();
+    return db.select(db.tags).get();
   }
 
   Future<void> saveTag(Tag tag) async {
-    await isar.writeTxn(() async {
-      await isar.tags.put(tag);
-    });
+    await db.into(db.tags).insertOnConflictUpdate(tag);
   }
 
-  Future<void> deleteTag(Id id) async {
-    await isar.writeTxn(() async {
-      await isar.tags.delete(id);
-    });
+  Future<void> deleteTag(String externalId) async {
+    await (db.delete(db.tags)..where((t) => t.externalId.equals(externalId))).go();
   }
 }
