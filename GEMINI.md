@@ -57,6 +57,7 @@ As a Senior Engineer, you must operate with high autonomy and strategic foresigh
 4.  **Verification & Validation:**
     *   Verify timezone handling (everything stored in UTC).
     *   Check state propagation across BLoCs and Sync Engine.
+    *   **Frontend: Build essential Widgetbook stories and Widget/Unit tests for all new widgets/features.**
     *   Run all tests.
 5.  **Clean Up & Document:**
     *   Ensure code is formatted (Black/Ruff for Python).

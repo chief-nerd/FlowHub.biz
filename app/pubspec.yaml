@@ -18,6 +18,8 @@ dependencies:
   intl: ^0.18.0
   google_fonts: ^6.1.0
   flutter_secure_storage: ^10.0.0
+  widgetbook: ^3.15.0
+  widgetbook_annotation: ^3.6.0
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +27,9 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   isar_generator: ^3.1.0
   build_runner: ^2.4.0
+  mocktail: ^1.0.5
+  bloc_test: ^9.1.7
+  widgetbook_generator: ^3.8.0
 
 flutter:
   uses-material-design: true
