@@ -30,7 +30,7 @@
 - [x] **2.7:** Implement Todo logic: Require manual transition to "Completed" even if children are done.
 
 ## 🗺️ Epic 3: Main Calendar & Time Blocking
-- [ ] **3.1:** Implement the Main Calendar View time grid (snapping to 15-minute intervals).
+- [x] **3.1:** Implement the Main Calendar View time grid (snapping to 15-minute intervals).
 - [ ] **3.2:** Implement robust Timezone UTC conversion utilities in both frontend and backend.
 - [ ] **3.3:** Implement Drag & Drop logic: Allow dragging a Todo from the Side Panel onto the Calendar grid.
 - [ ] **3.4:** Build the "Allocate Time" UI Prompt (15m, 30m, 1h, 2h, Rest) and handle the `estimated_duration` burndown math.

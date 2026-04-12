@@ -18,6 +18,7 @@ dependencies:
   intl: ^0.18.0
   google_fonts: ^6.1.0
   flutter_secure_storage: ^10.0.0
+  widgetbook_annotation: 3.6.0
 
 dev_dependencies:
   flutter_test:

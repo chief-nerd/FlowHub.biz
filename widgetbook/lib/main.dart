@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flowhub/shared/layouts/split_pane_layout.dart';
 import 'package:flowhub/features/home/presentation/widgets/todo_list_item.dart';
 import 'package:flowhub/features/home/presentation/widgets/side_panel.dart';
+import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
 import 'package:flowhub/features/home/domain/bloc/todo_bloc.dart';
 import 'package:flowhub/features/sync/data/models/todo.dart';
 
@@ -75,6 +76,17 @@ class WidgetbookApp extends StatelessWidget {
                         ..externalId = 'c2'
                         ..parentExternalId = 'p1',
                     ],
+                  ),
+                ),
+              ],
+            ),
+            WidgetbookComponent(
+              name: 'CalendarGrid',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Default',
+                  builder: (context) => const Scaffold(
+                    body: CalendarGrid(),
                   ),
                 ),
               ],
