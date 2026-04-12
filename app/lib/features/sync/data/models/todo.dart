@@ -1,6 +1,7 @@
 import 'package:isar/isar.dart';
 import 'goal.dart';
 import 'work_session.dart';
+import 'tag.dart';
 
 part 'todo.g.dart';
 
@@ -57,4 +58,6 @@ class Todo {
 
   @Backlink(to: 'todo')
   final workSessions = IsarLinks<WorkSession>();
+
+  final tags = IsarLinks<Tag>();
 }

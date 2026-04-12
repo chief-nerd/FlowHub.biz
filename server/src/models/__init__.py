@@ -1,8 +1,9 @@
 from src.models.goal import Goal
-from src.models.todo import Todo, TodoStatus, TodoSourceType
+from src.models.plugin_config import PluginConfig, PluginType
+from src.models.tag import Tag, todo_tags
+from src.models.todo import Todo, TodoSourceType, TodoStatus
 from src.models.user import User
 from src.models.work_session import WorkSession, WorkSessionStatus
-from src.models.plugin_config import PluginConfig, PluginType
 
 __all__ = [
     "User",
@@ -14,4 +15,6 @@ __all__ = [
     "WorkSessionStatus",
     "PluginConfig",
     "PluginType",
+    "Tag",
+    "todo_tags",
 ]

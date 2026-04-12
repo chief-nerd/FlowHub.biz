@@ -7,15 +7,20 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flowhub/features/home/presentation/pages/home_page.dart';
 import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
 import 'package:flowhub/features/sync/data/repositories/todo_repository.dart';
+import 'package:flowhub/features/sync/data/repositories/tag_repository.dart';
 
 class MockTodoRepository extends Mock implements TodoRepository {}
+class MockTagRepository extends Mock implements TagRepository {}
 
 void main() {
   late TodoRepository todoRepository;
+  late TagRepository tagRepository;
 
   setUp(() {
     todoRepository = MockTodoRepository();
+    tagRepository = MockTagRepository();
     when(() => todoRepository.watchTodos()).thenAnswer((_) => Stream.value([]));
+    when(() => tagRepository.watchTags()).thenAnswer((_) => Stream.value([]));
   });
 
   Widget createWidgetUnderTest() {
@@ -29,8 +34,11 @@ void main() {
       supportedLocales: const [
         Locale('en', ''),
       ],
-      home: RepositoryProvider.value(
-        value: todoRepository,
+      home: MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider.value(value: todoRepository),
+          RepositoryProvider.value(value: tagRepository),
+        ],
         child: const HomePage(),
       ),
     );

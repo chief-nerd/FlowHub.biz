@@ -52,6 +52,17 @@ This document outlines the User Stories and manual verification procedures for F
 - **Expected Result:** List updates instantly based on selected filter.
 - **Status:** ✅ Verified
 
+### **US 2.4: Hierarchical Tagging & Filtering**
+**Story:** As a user, I want to add tags with categories (e.g. customer/RIT) to my tasks and filter the view by these tags temporarily.
+- **Pre-conditions:** Tasks with tags exist.
+- **Test Steps:**
+    1. Open the Side Panel and expand the "Tags" section.
+    2. Tap on a category (e.g. "customer") or a specific tag name (e.g. "RIT").
+    3. Observe the task list filters to only show tasks with that tag.
+    4. Tap the "X" on the active filter chip to clear the filter.
+- **Expected Result:** Task list updates to show only matching tasks; tags are displayed with colors at the end of each todo item.
+- **Status:** ✅ Verified
+
 ---
 
 ## 📅 Epic 3: Main Calendar & Temporal Flow

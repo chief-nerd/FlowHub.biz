@@ -13,6 +13,7 @@ import 'package:flowhub/features/home/presentation/widgets/calendar_grid.dart';
 import 'package:flowhub/features/settings/presentation/pages/account_settings_page.dart';
 import 'package:flowhub/features/home/domain/bloc/todo_bloc.dart';
 import 'package:flowhub/features/sync/data/models/todo.dart';
+import 'package:flowhub/features/sync/data/models/tag.dart';
 
 class MockTodoBloc extends Mock implements TodoBloc {}
 
@@ -54,31 +55,26 @@ class WidgetbookApp extends StatelessWidget {
               name: 'TodoListItem',
               useCases: [
                 WidgetbookUseCase(
+                  name: 'Task with Tags',
+                  builder: (context) {
+                    final tag1 = Tag()..name = 'RIT'..category = 'customer'..color = '#FF5733';
+                    final tag2 = Tag()..name = 'Urgent'..color = '#FF0000';
+                    final todo = Todo()
+                      ..title = 'Fix critical bug'
+                      ..status = TodoStatus.inProgress;
+                    todo.tags.addAll([tag1, tag2]);
+
+                    return TodoListItem(
+                      todo: todo,
+                      allTodos: const [],
+                    );
+                  },
+                ),
+                WidgetbookUseCase(
                   name: 'Simple Task',
                   builder: (context) => TodoListItem(
                     todo: Todo()..title = 'Complete Widgetbook setup',
                     allTodos: const [],
-                  ),
-                ),
-                WidgetbookUseCase(
-                  name: 'Nested Tasks',
-                  builder: (context) => TodoListItem(
-                    todo: Todo()
-                      ..title = 'Parent Task'
-                      ..externalId = 'p1',
-                    allTodos: [
-                      Todo()
-                        ..title = 'Parent Task'
-                        ..externalId = 'p1',
-                      Todo()
-                        ..title = 'Child Task 1'
-                        ..externalId = 'c1'
-                        ..parentExternalId = 'p1',
-                      Todo()
-                        ..title = 'Child Task 2'
-                        ..externalId = 'c2'
-                        ..parentExternalId = 'p1',
-                    ],
                   ),
                 ),
               ],
@@ -115,15 +111,18 @@ class WidgetbookApp extends StatelessWidget {
                   name: 'Default',
                   builder: (context) {
                     final mockBloc = MockTodoBloc();
+                    final tag = Tag()..name = 'RIT'..category = 'customer'..color = '#FF5733';
                     final todos = [
                       Todo()..title = 'Regular Task'..status = TodoStatus.draft,
                       Todo()..title = 'Overdue Task'..status = TodoStatus.inProgress,
                     ];
+                    todos[0].tags.add(tag);
 
                     when(() => mockBloc.state).thenReturn(TodoLoaded(
                       allTodos: todos,
                       viewTodos: [todos[0]],
                       overdueTodos: [todos[1]],
+                      allTags: [tag],
                       activeFilter: TodoViewFilter.inbox,
                     ));
                     

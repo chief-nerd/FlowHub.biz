@@ -8,6 +8,7 @@ import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/sync/data/repositories/goal_repository.dart';
 import 'features/sync/data/repositories/todo_repository.dart';
 import 'features/sync/data/repositories/work_session_repository.dart';
+import 'features/sync/data/repositories/tag_repository.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -26,6 +27,7 @@ void main() async {
         RepositoryProvider(create: (context) => GoalRepository(databaseService.isar)),
         RepositoryProvider(create: (context) => TodoRepository(databaseService.isar)),
         RepositoryProvider(create: (context) => WorkSessionRepository(databaseService.isar)),
+        RepositoryProvider(create: (context) => TagRepository(databaseService.isar)),
       ],
       child: const MyApp(),
     ),

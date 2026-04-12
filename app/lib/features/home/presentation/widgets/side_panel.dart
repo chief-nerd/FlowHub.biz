@@ -20,6 +20,8 @@ class SidePanel extends StatelessWidget {
             children: [
               _buildFilterSection(context, state.activeFilter),
               const Divider(height: 1),
+              _buildTagSection(context, state),
+              const Divider(height: 1),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
@@ -30,6 +32,14 @@ class SidePanel extends StatelessWidget {
                   ),
                 ),
               ),
+              if (state.activeTagFilter != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Chip(
+                    label: Text('Tag: ${state.activeTagFilter}'),
+                    onDeleted: () => context.read<TodoBloc>().add(const ChangeTagFilter(null)),
+                  ),
+                ),
               Expanded(
                 child: ListView(
                   children: [
@@ -96,6 +106,45 @@ class SidePanel extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+
+  Widget _buildTagSection(BuildContext context, TodoLoaded state) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Extract unique categories and names
+    final categories = state.allTags.map((t) => t.category).whereType<String>().toSet().toList();
+    final names = state.allTags.map((t) => t.name).toSet().toList();
+
+    return ExpansionTile(
+      title: Text(l10n.tags, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      dense: true,
+      children: [
+        if (categories.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+            child: Align(alignment: Alignment.centerLeft, child: Text('Categories', style: Theme.of(context).textTheme.labelSmall)),
+          ),
+          ...categories.map((cat) => ListTile(
+            dense: true,
+            title: Text(cat),
+            selected: state.activeTagFilter == cat,
+            onTap: () => context.read<TodoBloc>().add(ChangeTagFilter(cat)),
+          )),
+        ],
+        if (names.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+            child: Align(alignment: Alignment.centerLeft, child: Text('Names', style: Theme.of(context).textTheme.labelSmall)),
+          ),
+          ...names.map((name) => ListTile(
+            dense: true,
+            title: Text(name),
+            selected: state.activeTagFilter == name,
+            onTap: () => context.read<TodoBloc>().add(ChangeTagFilter(name)),
+          )),
+        ],
+      ],
     );
   }
 

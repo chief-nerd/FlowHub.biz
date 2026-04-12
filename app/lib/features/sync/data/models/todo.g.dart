@@ -141,6 +141,12 @@ const TodoSchema = CollectionSchema(
       target: r'WorkSession',
       single: false,
       linkName: r'todo',
+    ),
+    r'tags': LinkSchema(
+      id: 3056408012929259026,
+      name: r'tags',
+      target: r'Tag',
+      single: false,
     )
   },
   embeddedSchemas: {},
@@ -324,7 +330,13 @@ Id _todoGetId(Todo object) {
 }
 
 List<IsarLinkBase<dynamic>> _todoGetLinks(Todo object) {
-  return [object.goal, object.parent, object.subTodos, object.workSessions];
+  return [
+    object.goal,
+    object.parent,
+    object.subTodos,
+    object.workSessions,
+    object.tags
+  ];
 }
 
 void _todoAttach(IsarCollection<dynamic> col, Id id, Todo object) {
@@ -334,6 +346,7 @@ void _todoAttach(IsarCollection<dynamic> col, Id id, Todo object) {
   object.subTodos.attach(col, col.isar.collection<Todo>(), r'subTodos', id);
   object.workSessions
       .attach(col, col.isar.collection<WorkSession>(), r'workSessions', id);
+  object.tags.attach(col, col.isar.collection<Tag>(), r'tags', id);
 }
 
 extension TodoByIndex on IsarCollection<Todo> {
@@ -2443,6 +2456,61 @@ extension TodoQueryLinks on QueryBuilder<Todo, Todo, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
           r'workSessions', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tags(FilterQuery<Tag> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'tags');
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'tags', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'tags', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'tags', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'tags', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'tags', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> tagsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'tags', lower, includeLower, upper, includeUpper);
     });
   }
 }

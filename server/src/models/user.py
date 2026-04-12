@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.models.goal import Goal
-    from src.models.todo import Todo
     from src.models.plugin_config import PluginConfig
+    from src.models.todo import Todo
 
 from sqlalchemy import String, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship

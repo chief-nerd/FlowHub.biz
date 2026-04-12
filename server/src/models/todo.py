@@ -1,12 +1,18 @@
 import enum
 import uuid
 from datetime import date
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Date, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base, TimestampMixin, uuid_pk
+
+if TYPE_CHECKING:
+    from src.models.goal import Goal
+    from src.models.tag import Tag
+    from src.models.user import User
+    from src.models.work_session import WorkSession
 
 
 class TodoStatus(str, enum.Enum):
@@ -70,4 +76,10 @@ class Todo(Base, TimestampMixin):
 
     work_sessions: Mapped[list["WorkSession"]] = relationship(
         back_populates="todo", cascade="all, delete-orphan"
+    )
+
+    from src.models.tag import todo_tags
+
+    tags: Mapped[list["Tag"]] = relationship(
+        "Tag", secondary=todo_tags, back_populates="todos"
     )

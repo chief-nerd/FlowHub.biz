@@ -8,6 +8,7 @@ import '../widgets/calendar_grid.dart';
 import '../../domain/bloc/todo_bloc.dart';
 import '../../domain/bloc/calendar_bloc.dart';
 import '../../../sync/data/repositories/todo_repository.dart';
+import '../../../sync/data/repositories/tag_repository.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -19,6 +20,7 @@ class HomePage extends StatelessWidget {
         BlocProvider(
           create: (context) => TodoBloc(
             todoRepository: context.read<TodoRepository>(),
+            tagRepository: context.read<TagRepository>(),
           )..add(LoadTodos()),
         ),
         BlocProvider(

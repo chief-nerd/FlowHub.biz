@@ -48,6 +48,7 @@ void main() {
       allTodos: todos,
       viewTodos: [todos[0]],
       overdueTodos: const [],
+      allTags: const [],
       activeFilter: TodoViewFilter.inbox,
     ));
 
@@ -70,6 +71,7 @@ void main() {
       allTodos: [overdueTodo],
       viewTodos: const [],
       overdueTodos: [overdueTodo],
+      allTags: const [],
       activeFilter: TodoViewFilter.inbox,
     ));
 
@@ -85,6 +87,7 @@ void main() {
       allTodos: [],
       viewTodos: [],
       overdueTodos: [],
+      allTags: [],
       activeFilter: TodoViewFilter.inbox,
     ));
 
