@@ -1,12 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-
-enum PluginType {
-  github,
-  msTodo,
-  flaggedEmails,
-  frappe,
-}
+import '../../../../core/plugins/plugin_registry.dart';
 
 class PluginStatus extends Equatable {
   final PluginType type;
@@ -80,19 +74,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       emit(SettingsLoading());
       // Simulate API call
       await Future.delayed(const Duration(milliseconds: 500));
-      emit(const SettingsLoaded(plugins: [
-        PluginStatus(type: PluginType.github, isConnected: false),
-        PluginStatus(type: PluginType.msTodo, isConnected: false),
-        PluginStatus(type: PluginType.flaggedEmails, isConnected: false),
-        PluginStatus(type: PluginType.frappe, isConnected: false),
-      ]));
+      
+      // Build list dynamically from Registry
+      final initialPlugins = PluginRegistry.definitions.map((def) => 
+        PluginStatus(type: def.type, isConnected: false)
+      ).toList();
+
+      emit(SettingsLoaded(plugins: initialPlugins));
     });
 
     on<ConnectPlugin>((event, emit) async {
       if (state is SettingsLoaded) {
         final currentPlugins = (state as SettingsLoaded).plugins;
-        // Logic to trigger OAuth or key entry would go here
-        // For now, optimistic update
         final updatedPlugins = currentPlugins.map((p) {
           if (p.type == event.type) {
             return PluginStatus(type: p.type, isConnected: true, accountName: 'User Account');

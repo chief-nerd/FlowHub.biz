@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../../core/plugins/plugin_registry.dart';
 import '../../domain/bloc/settings_bloc.dart';
 
 class AccountSettingsPage extends StatelessWidget {
@@ -50,35 +51,19 @@ class AccountSettingsPage extends StatelessWidget {
 
   Widget _buildPluginTile(BuildContext context, PluginStatus plugin) {
     final l10n = AppLocalizations.of(context)!;
-    final String name;
-    final IconData icon;
+    final definition = PluginRegistry.getByType(plugin.type);
+    
+    if (definition == null) return const SizedBox.shrink();
 
-    switch (plugin.type) {
-      case PluginType.github:
-        name = l10n.githubPlugin;
-        icon = Icons.code;
-        break;
-      case PluginType.msTodo:
-        name = l10n.msTodoPlugin;
-        icon = Icons.check_circle_outline;
-        break;
-      case PluginType.flaggedEmails:
-        name = l10n.flaggedEmailsPlugin;
-        icon = Icons.email_outlined;
-        break;
-      case PluginType.frappe:
-        name = l10n.frappePlugin;
-        icon = Icons.business;
-        break;
-    }
+    final String name = definition.getName(l10n);
 
     return ListTile(
-      leading: Icon(icon, size: 28),
+      leading: Icon(definition.icon, size: 28),
       title: Text(name),
       subtitle: Text(
         plugin.isConnected 
           ? '${l10n.connected}: ${plugin.accountName}' 
-          : l10n.pluginDescription(name)
+          : definition.getDescription(l10n)
       ),
       trailing: plugin.isConnected
           ? TextButton(
@@ -86,25 +71,25 @@ class AccountSettingsPage extends StatelessWidget {
               child: Text(l10n.disconnect, style: const TextStyle(color: Colors.red)),
             )
           : ElevatedButton(
-              onPressed: () => _showConnectDialog(context, plugin.type),
+              onPressed: () => _showConnectDialog(context, plugin.type, name),
               child: Text(l10n.connect),
             ),
     );
   }
 
-  void _showConnectDialog(BuildContext context, PluginType type) {
+  void _showConnectDialog(BuildContext context, PluginType type, String name) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('${l10n.connect} ${type.name.toUpperCase()}'),
+        title: Text('${l10n.connect} ${name.toUpperCase()}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               decoration: InputDecoration(
                 labelText: 'API Key / Token',
-                hintText: 'Enter your ${type.name} token',
+                hintText: 'Enter your $name token',
               ),
               obscureText: true,
             ),
