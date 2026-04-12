@@ -7,6 +7,17 @@ from src.models.user import User
 from src.models.work_session import WorkSession, WorkSessionStatus
 
 
+from src.models.tag import Tag
+
+
+def test_tag_display_name():
+    tag_simple = Tag(name="Urgent")
+    assert tag_simple.display_name == "Urgent"
+
+    tag_with_cat = Tag(name="RIT", category="customer")
+    assert tag_with_cat.display_name == "customer/RIT"
+
+
 def test_user_model():
     user = User(
         email="test@example.com",
