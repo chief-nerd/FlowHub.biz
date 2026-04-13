@@ -69,5 +69,4 @@ docker-compose.override.yml
 # Project
 # GEMINI.md
 
-app/build
-app/build/*
+app/build/
