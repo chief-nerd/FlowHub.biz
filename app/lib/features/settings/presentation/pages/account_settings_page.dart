@@ -78,34 +78,35 @@ class AccountSettingsPage extends StatelessWidget {
   }
 
   void _showConnectDialog(BuildContext context, PluginType type, String name) {
-    final l10n = AppLocalizations.of(context)!;
+    final definition = PluginRegistry.getByType(type);
+    if (definition == null) return;
+
+    // Capture the bloc before entering the dialog's BuildContext so we can
+    // dispatch the event even after the dialog is gone.
+    final bloc = context.read<SettingsBloc>();
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('${l10n.connect} ${name.toUpperCase()}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'API Key / Token',
-                hintText: 'Enter your $name token',
-              ),
-              obscureText: true,
+        title: Text('Connect $name'),
+        // Let each plugin form control its own vertical size.
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        content: SizedBox(
+          width: 420,
+          child: SingleChildScrollView(
+            child: definition.buildConnectContent(
+              dialogContext,
+              (credentials) {
+                bloc.add(ConnectPlugin(type, credentials));
+                Navigator.pop(dialogContext);
+              },
             ),
-          ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<SettingsBloc>().add(ConnectPlugin(type));
-              Navigator.pop(dialogContext);
-            },
-            child: Text(l10n.connect),
           ),
         ],
       ),

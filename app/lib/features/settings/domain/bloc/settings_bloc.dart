@@ -28,9 +28,12 @@ class LoadSettings extends SettingsEvent {}
 
 class ConnectPlugin extends SettingsEvent {
   final PluginType type;
-  const ConnectPlugin(this.type);
+  final Map<String, String> credentials;
+
+  const ConnectPlugin(this.type, this.credentials);
+
   @override
-  List<Object?> get props => [type];
+  List<Object?> get props => [type, credentials];
 }
 
 class DisconnectPlugin extends SettingsEvent {
@@ -86,11 +89,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<ConnectPlugin>((event, emit) async {
       if (state is SettingsLoaded) {
         final currentPlugins = (state as SettingsLoaded).plugins;
-        // Logic to trigger OAuth or key entry would go here
-        // For now, optimistic update
+        final accountName = _accountNameFrom(event.type, event.credentials);
         final updatedPlugins = currentPlugins.map((p) {
           if (p.type == event.type) {
-            return PluginStatus(type: p.type, isConnected: true, accountName: 'User Account');
+            return PluginStatus(
+                type: p.type, isConnected: true, accountName: accountName);
           }
           return p;
         }).toList();
@@ -110,5 +113,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         emit(SettingsLoaded(plugins: updatedPlugins));
       }
     });
+  }
+
+  String _accountNameFrom(PluginType type, Map<String, String> credentials) {
+    switch (type) {
+      case PluginType.github:
+        return 'GitHub';
+      case PluginType.msTodo:
+        return credentials['tenantId'] ?? 'Microsoft Account';
+      case PluginType.flaggedEmails:
+        return credentials['email'] ?? 'IMAP Account';
+      case PluginType.frappe:
+        return credentials['url'] ?? 'Frappe Instance';
+    }
   }
 }

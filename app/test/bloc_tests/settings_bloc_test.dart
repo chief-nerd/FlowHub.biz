@@ -36,7 +36,7 @@ void main() {
       seed: () => const SettingsLoaded(plugins: [
         PluginStatus(type: PluginType.github, isConnected: false),
       ]),
-      act: (bloc) => bloc.add(const ConnectPlugin(PluginType.github)),
+      act: (bloc) => bloc.add(const ConnectPlugin(PluginType.github, {})),
       expect: () => [
         isA<SettingsLoaded>().having((s) => s.plugins.first.isConnected, 'is connected', true),
       ],
