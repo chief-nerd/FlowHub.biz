@@ -16,12 +16,39 @@ class SplitPaneLayout extends StatefulWidget {
 }
 
 class _SplitPaneLayoutState extends State<SplitPaneLayout> {
+  static const double _minWidth = 160.0;
+  static const double _maxWidth = 520.0;
+
+  double _panelWidth = LayoutConstants.sidePanelWidth;
+  double _widthBeforeCollapse = LayoutConstants.sidePanelWidth;
   bool _isSidePanelVisible = true;
+  bool _isDragging = false;
 
   void _toggleSidePanel() {
     setState(() {
-      _isSidePanelVisible = !_isSidePanelVisible;
+      if (_isSidePanelVisible) {
+        _widthBeforeCollapse = _panelWidth;
+        _isSidePanelVisible = false;
+      } else {
+        _panelWidth = _widthBeforeCollapse;
+        _isSidePanelVisible = true;
+      }
     });
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      _panelWidth = (_panelWidth + details.delta.dx).clamp(_minWidth, _maxWidth);
+      _isSidePanelVisible = true;
+    });
+  }
+
+  void _onDragStart(DragStartDetails _) {
+    setState(() => _isDragging = true);
+  }
+
+  void _onDragEnd(DragEndDetails _) {
+    setState(() => _isDragging = false);
   }
 
   @override
@@ -29,27 +56,35 @@ class _SplitPaneLayoutState extends State<SplitPaneLayout> {
     return Scaffold(
       body: Row(
         children: [
-          // Collapsible Side Panel
+          // Collapsible / resizable side panel
           AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+            duration: _isDragging
+                ? Duration.zero
+                : const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            width: _isSidePanelVisible ? LayoutConstants.sidePanelWidth : 0.0,
-            child: ClipRect(
-              child: widget.sidePanel,
-            ),
+            width: _isSidePanelVisible ? _panelWidth : 0.0,
+            child: ClipRect(child: widget.sidePanel),
           ),
-          
-          // Divider / Toggle Button
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: _toggleSidePanel,
+
+          // Drag handle / toggle button
+          GestureDetector(
+            onTap: _toggleSidePanel,
+            onHorizontalDragStart: _onDragStart,
+            onHorizontalDragUpdate: _onDragUpdate,
+            onHorizontalDragEnd: _onDragEnd,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.resizeColumn,
               child: Container(
                 width: LayoutConstants.gridDividerWidth,
                 decoration: BoxDecoration(
+                  color: _isDragging
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
+                      : null,
                   border: Border(
                     right: BorderSide(
-                      color: Theme.of(context).dividerColor,
+                      color: _isDragging
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).dividerColor,
                       width: 1.0,
                     ),
                   ),
@@ -64,11 +99,9 @@ class _SplitPaneLayoutState extends State<SplitPaneLayout> {
               ),
             ),
           ),
-          
-          // Main Content
-          Expanded(
-            child: widget.mainContent,
-          ),
+
+          // Main content
+          Expanded(child: widget.mainContent),
         ],
       ),
     );

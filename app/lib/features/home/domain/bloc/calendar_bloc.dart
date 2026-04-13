@@ -79,9 +79,21 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     });
 
     on<CalendarReferenceDateNavigated>((event, emit) {
-      emit(state.copyWith(
-        referenceDate: state.referenceDate.add(Duration(days: event.days)),
-      ));
+      final d = event.days; // direction: -1 or +1
+      final ref = state.referenceDate;
+      late DateTime next;
+      switch (state.viewMode) {
+        case CalendarViewMode.day:
+          next = ref.add(Duration(days: d));
+        case CalendarViewMode.threeDay:
+          next = ref.add(Duration(days: 3 * d));
+        case CalendarViewMode.workWeek:
+        case CalendarViewMode.week:
+          next = ref.add(Duration(days: 7 * d));
+        case CalendarViewMode.month:
+          next = DateTime(ref.year, ref.month + d, 1);
+      }
+      emit(state.copyWith(referenceDate: next));
     });
 
     on<CalendarTodayJumped>((event, emit) {

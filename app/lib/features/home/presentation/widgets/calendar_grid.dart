@@ -196,7 +196,12 @@ class _CalendarGridState extends State<CalendarGrid> {
       }
     }
 
-    if (todayIndex == -1) return const SizedBox.shrink();
+    // Return a zero-size POSITIONED widget so the Stack always has all
+    // positioned children and sizes itself to constraints.biggest (full width).
+    // A non-positioned SizedBox.shrink() would collapse Stack width to 0.
+    if (todayIndex == -1) {
+      return const Positioned(top: 0, left: 0, child: SizedBox.shrink());
+    }
 
     final minutes = now.hour * 60 + now.minute;
     final offset = minutes * _pixelsPerMinute;

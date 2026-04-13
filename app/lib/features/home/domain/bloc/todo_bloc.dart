@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rxdart/rxdart.dart';
@@ -27,6 +28,80 @@ class ChangeTagFilter extends TodoEvent {
   const ChangeTagFilter(this.tagFilter);
   @override
   List<Object?> get props => [tagFilter];
+}
+
+class CreateTodo extends TodoEvent {
+  final String title;
+  final String? description;
+  final TodoImportance importance;
+  final DateTime? dueDate;
+  final String? parentExternalId;
+  final List<String> tagIds;
+
+  const CreateTodo({
+    required this.title,
+    this.description,
+    this.importance = TodoImportance.medium,
+    this.dueDate,
+    this.parentExternalId,
+    this.tagIds = const [],
+  });
+
+  @override
+  List<Object?> get props => [title, description, importance, dueDate, parentExternalId, tagIds];
+}
+
+class UpdateTodo extends TodoEvent {
+  final String externalId;
+  final String title;
+  final String? description;
+  final TodoImportance importance;
+  final DateTime? dueDate;
+  final List<String> tagIds;
+
+  const UpdateTodo({
+    required this.externalId,
+    required this.title,
+    this.description,
+    this.importance = TodoImportance.medium,
+    this.dueDate,
+    this.tagIds = const [],
+  });
+
+  @override
+  List<Object?> get props => [externalId, title, description, importance, dueDate, tagIds];
+}
+
+class CreateTag extends TodoEvent {
+  final String name;
+  final String? category;
+  final String? color;
+
+  const CreateTag({
+    required this.name,
+    this.category,
+    this.color,
+  });
+
+  @override
+  List<Object?> get props => [name, category, color];
+}
+
+class UpdateTag extends TodoEvent {
+  final String externalId;
+  final String name;
+  final String? category;
+  final String? color;
+
+  const UpdateTag({
+    required this.externalId,
+    required this.name,
+    this.category,
+    this.color,
+  });
+
+  @override
+  List<Object?> get props => [externalId, name, category, color];
 }
 
 // States
@@ -80,6 +155,10 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     on<LoadTodos>(_onLoadTodos);
     on<ChangeViewFilter>(_onChangeViewFilter);
     on<ChangeTagFilter>(_onChangeTagFilter);
+    on<CreateTodo>(_onCreateTodo);
+    on<UpdateTodo>(_onUpdateTodo);
+    on<CreateTag>(_onCreateTag);
+    on<UpdateTag>(_onUpdateTag);
   }
 
   Future<void> _onLoadTodos(LoadTodos event, Emitter<TodoState> emit) async {
@@ -120,6 +199,68 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     } catch (e) {
       emit(TodoError(e.toString()));
     }
+  }
+
+  Future<void> _onCreateTodo(CreateTodo event, Emitter<TodoState> emit) async {
+    final db = todoRepository.db;
+    await db.ensureLocalUser();
+    final id = '${AppDatabase.localUserId}-${DateTime.now().microsecondsSinceEpoch}';
+    final now = DateTime.now();
+    final todo = Todo(
+      externalId: id,
+      parentExternalId: event.parentExternalId,
+      goalExternalId: null,
+      ownerExternalId: AppDatabase.localUserId,
+      assigneeExternalId: null,
+      sourceType: TodoSourceType.native,
+      externalSourceId: null,
+      title: event.title,
+      description: event.description,
+      startDate: null,
+      dueDate: event.dueDate,
+      status: TodoStatus.inProgress,
+      importance: event.importance,
+      estimatedDuration: 0,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await todoRepository.saveTodo(todo, tagIds: event.tagIds);
+  }
+
+  Future<void> _onUpdateTodo(UpdateTodo event, Emitter<TodoState> emit) async {
+    final existing = await todoRepository.getTodoById(event.externalId);
+    if (existing == null) return;
+    final updated = existing.todo.copyWith(
+      title: event.title,
+      description: Value(event.description),
+      importance: event.importance,
+      dueDate: Value(event.dueDate),
+      updatedAt: Value(DateTime.now()),
+    );
+    await todoRepository.saveTodo(updated, tagIds: event.tagIds);
+  }
+
+  Future<void> _onCreateTag(CreateTag event, Emitter<TodoState> emit) async {
+    final id = 'local-tag-${DateTime.now().microsecondsSinceEpoch}';
+    final tag = Tag(
+      externalId: id,
+      name: event.name,
+      category: event.category,
+      color: event.color,
+      parentExternalId: null,
+    );
+    await tagRepository.saveTag(tag);
+  }
+
+  Future<void> _onUpdateTag(UpdateTag event, Emitter<TodoState> emit) async {
+    final tag = Tag(
+      externalId: event.externalId,
+      name: event.name,
+      category: event.category,
+      color: event.color,
+      parentExternalId: null,
+    );
+    await tagRepository.saveTag(tag);
   }
 
   void _onChangeViewFilter(ChangeViewFilter event, Emitter<TodoState> emit) {
@@ -206,7 +347,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     List<TodoWithTags> viewTodos = baseViewTodos;
     if (tagFilter != null && tagFilter.isNotEmpty) {
       viewTodos = baseViewTodos.where((t) {
-        return t.tags.any((tag) => tag.name == tagFilter || tag.category == tagFilter);
+        return t.tags.any((tag) => tag.externalId == tagFilter);
       }).toList();
     }
 
@@ -216,7 +357,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       if (!isOverdue) return false;
       
       if (tagFilter != null && tagFilter.isNotEmpty) {
-        return t.tags.any((tag) => tag.name == tagFilter || tag.category == tagFilter);
+        return t.tags.any((tag) => tag.externalId == tagFilter);
       }
       return true;
     }).toList();

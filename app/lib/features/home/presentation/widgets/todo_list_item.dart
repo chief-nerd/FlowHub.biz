@@ -6,12 +6,14 @@ class TodoListItem extends StatefulWidget {
   final TodoWithTags todoWithTags;
   final List<TodoWithTags> allTodos;
   final int depth;
+  final VoidCallback? onTapped;
 
   const TodoListItem({
     super.key,
     required this.todoWithTags,
     required this.allTodos,
     this.depth = 0,
+    this.onTapped,
   });
 
   @override
@@ -66,7 +68,7 @@ class _TodoListItemState extends State<TodoListItem> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: _toggleExpand,
+          onTap: widget.onTapped ?? _toggleExpand,
           child: IntrinsicHeight(
             child: Row(
               children: [
@@ -85,16 +87,20 @@ class _TodoListItemState extends State<TodoListItem> {
                     ),
                     child: Row(
                       children: [
-                        SizedBox(
-                          width: 24,
-                          child: hasChildren
-                              ? Icon(
-                                  _isExpanded
-                                      ? Icons.keyboard_arrow_down
-                                      : Icons.keyboard_arrow_right,
-                                  size: 20,
-                                )
-                              : null,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: hasChildren ? _toggleExpand : null,
+                          child: SizedBox(
+                            width: 24,
+                            child: hasChildren
+                                ? Icon(
+                                    _isExpanded
+                                        ? Icons.keyboard_arrow_down
+                                        : Icons.keyboard_arrow_right,
+                                    size: 20,
+                                  )
+                                : null,
+                          ),
                         ),
                         Icon(
                           Icons.circle_outlined,

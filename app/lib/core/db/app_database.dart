@@ -134,10 +134,24 @@ class TodoWithTags {
 
 @DriftDatabase(tables: [Users, Goals, Tags, Todos, TodoTags, WorkSessions])
 class AppDatabase extends _$AppDatabase {
+  static const String localUserId = 'local-user';
+
   AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
+
+  /// Ensures a local user row exists. Call before inserting any owned rows.
+  Future<void> ensureLocalUser() async {
+    final existing = await (select(users)..where((u) => u.externalId.equals(localUserId))).getSingleOrNull();
+    if (existing == null) {
+      await into(users).insert(UsersCompanion.insert(
+        externalId: localUserId,
+        email: 'local@flowhub.local',
+        fullName: 'Local User',
+      ));
+    }
+  }
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
